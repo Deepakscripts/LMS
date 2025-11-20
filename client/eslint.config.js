@@ -56,7 +56,7 @@ export default [
         },
       ],
 
-      'jsx-a11y/no-static-element-interactions': 'warn',
+      'jsx-a11y/no-static-element-interactions': 'off',
     },
   },
 ];
