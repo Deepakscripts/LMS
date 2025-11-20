@@ -1,7 +1,9 @@
 import { Menu, X } from 'lucide-react';
 import React, { useState } from 'react';
+import LoginPopup from './LoginPopup';
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   return (
     <>
@@ -35,12 +37,12 @@ function Navbar() {
                 >
                   How it works
                 </a>
-                <a
-                  href="/login"
+                <button
+                  onClick={() => setIsLoginOpen(true)}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full font-medium transition-all transform hover:scale-105"
                 >
                   Login
-                </a>
+                </button>
               </div>
             </div>
 
@@ -78,16 +80,25 @@ function Navbar() {
               >
                 How it works
               </a>
-              <a
-                href="/login"
+              <button
+                onClick={() => setIsLoginOpen(true)}
                 className="block px-3 py-2 rounded-md text-base font-medium text-blue-400"
               >
                 Login
-              </a>
+              </button>
             </div>
           </div>
         )}
       </nav>
+
+      <LoginPopup
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+        onSubmit={(email, password) => {
+          console.log('Login attempt:', { email, password });
+          setIsLoginOpen(false);
+        }}
+      />
     </>
   );
 }
