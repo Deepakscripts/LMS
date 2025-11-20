@@ -25,9 +25,9 @@ const TopBar = () => {
         </button>
 
         {/* Settings Icon */}
-        <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+        {/* <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
           <Settings className="w-6 h-6" />
-        </button>
+        </button> */}
 
         {/* User Avatar */}
         <button className="flex items-center space-x-2">
@@ -41,3 +41,4 @@ const TopBar = () => {
 };
 
 export default TopBar;
+

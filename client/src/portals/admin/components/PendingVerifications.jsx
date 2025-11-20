@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from './ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +15,7 @@ const PendingVerifications = () => {
   const [filters, setFilters] = useState({
     college: 'All',
     year: 'All',
-    domain: 'All'
+    domain: 'All',
   });
 
   const studentsData = [
@@ -33,7 +26,7 @@ const PendingVerifications = () => {
       college: 'IIT Bombay',
       year: 'Third Year',
       domain: 'Data Science',
-      paymentStatus: 'Pending'
+      paymentStatus: 'Pending',
     },
     {
       id: 2,
@@ -42,7 +35,7 @@ const PendingVerifications = () => {
       college: 'NIT Trichy',
       year: 'Final Year',
       domain: 'Web Development',
-      paymentStatus: 'Pending'
+      paymentStatus: 'Pending',
     },
     {
       id: 3,
@@ -51,7 +44,7 @@ const PendingVerifications = () => {
       college: 'BITS Pilani',
       year: 'Second Year',
       domain: 'Machine Learning',
-      paymentStatus: 'Pending'
+      paymentStatus: 'Pending',
     },
     {
       id: 4,
@@ -60,7 +53,7 @@ const PendingVerifications = () => {
       college: 'IIT Delhi',
       year: 'Third Year',
       domain: 'Cybersecurity',
-      paymentStatus: 'Pending'
+      paymentStatus: 'Pending',
     },
     {
       id: 5,
@@ -69,8 +62,8 @@ const PendingVerifications = () => {
       college: 'VIT Vellore',
       year: 'Final Year',
       domain: 'Cloud Computing',
-      paymentStatus: 'Pending'
-    }
+      paymentStatus: 'Pending',
+    },
   ];
 
   const itemsPerPage = 5;
@@ -80,23 +73,23 @@ const PendingVerifications = () => {
     setFilters({
       college: 'All',
       year: 'All',
-      domain: 'All'
+      domain: 'All',
     });
   };
 
-  const handleVerify = (studentName) => {
+  const handleVerify = studentName => {
     console.log('Verifying:', studentName);
     // Add your verification logic here
   };
 
   const paginatedData = studentsData.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   const renderPaginationButtons = () => {
     const buttons = [];
-    
+
     if (totalPages <= 5) {
       for (let i = 1; i <= totalPages; i++) {
         buttons.push(i);
@@ -110,7 +103,7 @@ const PendingVerifications = () => {
         buttons.push(1, '...', currentPage, '...', totalPages);
       }
     }
-    
+
     return buttons;
   };
 
@@ -135,17 +128,19 @@ const PendingVerifications = () => {
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className='text-black bg-white'>
-                <DropdownMenuItem onClick={() => setFilters({...filters, college: 'All'})}>
+              <DropdownMenuContent className="text-black bg-white">
+                <DropdownMenuItem onClick={() => setFilters({ ...filters, college: 'All' })}>
                   All Colleges
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilters({...filters, college: 'IIT Bombay'})}>
+                <DropdownMenuItem onClick={() => setFilters({ ...filters, college: 'IIT Bombay' })}>
                   IIT Bombay
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilters({...filters, college: 'NIT Trichy'})}>
+                <DropdownMenuItem onClick={() => setFilters({ ...filters, college: 'NIT Trichy' })}>
                   NIT Trichy
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilters({...filters, college: 'BITS Pilani'})}>
+                <DropdownMenuItem
+                  onClick={() => setFilters({ ...filters, college: 'BITS Pilani' })}
+                >
                   BITS Pilani
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -158,17 +153,17 @@ const PendingVerifications = () => {
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className='text-black bg-white'>
-                <DropdownMenuItem onClick={() => setFilters({...filters, year: 'All'})}>
+              <DropdownMenuContent className="text-black bg-white">
+                <DropdownMenuItem onClick={() => setFilters({ ...filters, year: 'All' })}>
                   All Years
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilters({...filters, year: 'Second Year'})}>
+                <DropdownMenuItem onClick={() => setFilters({ ...filters, year: 'Second Year' })}>
                   Second Year
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilters({...filters, year: 'Third Year'})}>
+                <DropdownMenuItem onClick={() => setFilters({ ...filters, year: 'Third Year' })}>
                   Third Year
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilters({...filters, year: 'Final Year'})}>
+                <DropdownMenuItem onClick={() => setFilters({ ...filters, year: 'Final Year' })}>
                   Final Year
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -181,24 +176,30 @@ const PendingVerifications = () => {
                   <ChevronDown className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className='text-black bg-white'>
-                <DropdownMenuItem onClick={() => setFilters({...filters, domain: 'All'})}>
+              <DropdownMenuContent className="text-black bg-white">
+                <DropdownMenuItem onClick={() => setFilters({ ...filters, domain: 'All' })}>
                   All Domains
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilters({...filters, domain: 'Data Science'})}>
+                <DropdownMenuItem
+                  onClick={() => setFilters({ ...filters, domain: 'Data Science' })}
+                >
                   Data Science
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilters({...filters, domain: 'Web Development'})}>
+                <DropdownMenuItem
+                  onClick={() => setFilters({ ...filters, domain: 'Web Development' })}
+                >
                   Web Development
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilters({...filters, domain: 'Machine Learning'})}>
+                <DropdownMenuItem
+                  onClick={() => setFilters({ ...filters, domain: 'Machine Learning' })}
+                >
                   Machine Learning
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={handleResetFilters}
               className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
             >
@@ -223,23 +224,13 @@ const PendingVerifications = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedData.map((student) => (
+              {paginatedData.map(student => (
                 <TableRow key={student.id} className="hover:bg-gray-50">
-                  <TableCell className="font-medium text-gray-900">
-                    {student.name}
-                  </TableCell>
-                  <TableCell className="text-blue-600">
-                    {student.email}
-                  </TableCell>
-                  <TableCell className="text-blue-600">
-                    {student.college}
-                  </TableCell>
-                  <TableCell className="text-gray-700">
-                    {student.year}
-                  </TableCell>
-                  <TableCell className="text-gray-700">
-                    {student.domain}
-                  </TableCell>
+                  <TableCell className="font-medium text-gray-900">{student.name}</TableCell>
+                  <TableCell className="text-blue-600">{student.email}</TableCell>
+                  <TableCell className="text-blue-600">{student.college}</TableCell>
+                  <TableCell className="text-gray-700">{student.year}</TableCell>
+                  <TableCell className="text-gray-700">{student.domain}</TableCell>
                   <TableCell>
                     <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-0">
                       {student.paymentStatus}
@@ -274,7 +265,7 @@ const PendingVerifications = () => {
 
               <span className="text-sm text-gray-600 px-2">Previous</span>
 
-              {renderPaginationButtons().map((page, index) => (
+              {renderPaginationButtons().map((page, index) =>
                 page === '...' ? (
                   <span key={`ellipsis-${index}`} className="px-3 py-2 text-gray-600">
                     ...
@@ -282,7 +273,7 @@ const PendingVerifications = () => {
                 ) : (
                   <Button
                     key={page}
-                    variant={currentPage === page ? "default" : "outline"}
+                    variant={currentPage === page ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setCurrentPage(page)}
                     className={`px-4 py-2 ${
@@ -293,8 +284,8 @@ const PendingVerifications = () => {
                   >
                     {page}
                   </Button>
-                )
-              ))}
+                ),
+              )}
 
               <span className="text-sm text-gray-600 px-2">Next</span>
 

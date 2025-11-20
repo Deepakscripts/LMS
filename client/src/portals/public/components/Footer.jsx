@@ -86,10 +86,20 @@ const Footer = () => {
             </div>
 
             <div className="border-t border-zinc-900 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-600">
-              <p>© 2025 LMS Portal. All rights reserved.</p>
+              <p>&copy; {new Date().getFullYear()} LMS Portal. All rights reserved.</p>
               <div className="flex gap-4 mt-4 md:mt-0">
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
+                <Link
+                  to="/privacy"
+                  className="text-gray-600 hover:text-blue-600 hover:underline transition duration-300"
+                >
+                  Privacy Policy
+                </Link>
+                <Link
+                  to="/terms"
+                  className="text-gray-600 hover:text-blue-600 hover:underline transition duration-300"
+                >
+                  Terms of Service
+                </Link>
               </div>
             </div>
           </div>

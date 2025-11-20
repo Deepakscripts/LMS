@@ -7,15 +7,19 @@ import {
   Settings,
   HelpCircle,
   LogOut,
+  Megaphone,
+  FileBadge,
 } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
 const Sidebar = () => {
   return (
     <div className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
       {/* Logo Section */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+      <div className="px-6 py-4 border-b border-gray-200">
+        <div className="flex items-center space-x-3">
+          <div className="size-[2.95rem] bg-blue-500 rounded-lg flex items-center justify-center border">
             <span className="text-white font-bold text-sm">C2</span>
           </div>
           <div>
@@ -29,72 +33,134 @@ const Sidebar = () => {
       <nav className="flex-1 p-4">
         <ul className="space-y-1">
           <li>
-            <a
-              href="/admin/"
-              className="flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+            <NavLink
+              to="/admin"
+              end
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
+                  isActive && 'text-blue-600 bg-blue-50',
+                )
+              }
             >
               <LayoutDashboard className="w-5 h-5" />
               <span className="font-medium">Dashboard</span>
-            </a>
+            </NavLink>
           </li>
           <li>
-            <a
-              href="#"
-              className="flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <BookOpen className="w-5 h-5" />
-              <span className="font-medium">Courses</span>
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center space-x-3 px-4 py-3 text-blue-600 bg-blue-50 rounded-lg"
-            >
-              <Users className="w-5 h-5" />
-              <span className="font-medium">Students</span>
-            </a>
-          </li>
-          <li>
-            <a
-              href="#"
-              className="flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+            <NavLink
+              to="/admin/analytics"
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
+                  isActive && 'text-blue-600 bg-blue-50',
+                )
+              }
             >
               <BarChart3 className="w-5 h-5" />
               <span className="font-medium">Analytics</span>
-            </a>
+            </NavLink>
           </li>
           <li>
-            <a
-              href="#"
-              className="flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+            <NavLink
+              to="/admin/students"
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
+                  isActive && 'text-blue-600 bg-blue-50',
+                )
+              }
+            >
+              <Users className="w-5 h-5" />
+              <span className="font-medium">Students</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/admin/courses"
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
+                  isActive && 'text-blue-600 bg-blue-50',
+                )
+              }
+            >
+              <BookOpen className="w-5 h-5" />
+              <span className="font-medium">Courses</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/admin/announcements"
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
+                  isActive && 'text-blue-600 bg-blue-50',
+                )
+              }
+            >
+              <Megaphone className="w-5 h-5" />
+              <span className="font-medium">Announcements</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/admin/certificate"
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
+                  isActive && 'text-blue-600 bg-blue-50',
+                )
+              }
+            >
+              <FileBadge className="w-5 h-5" />
+              <span className="font-medium">Manage Certificate</span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/admin/settings"
+              className={({ isActive }) =>
+                cn(
+                  'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
+                  isActive && 'text-blue-600 bg-blue-50',
+                )
+              }
             >
               <Settings className="w-5 h-5" />
               <span className="font-medium">Settings</span>
-            </a>
+            </NavLink>
           </li>
         </ul>
       </nav>
 
       {/* Bottom Section */}
       <div className="p-4 border-t border-gray-200">
-        <a
-          href="#"
-          className="flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+        <NavLink
+          to="/admin/support"
+          className={({ isActive }) =>
+            cn(
+              'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
+              isActive && 'text-blue-600 bg-blue-50',
+            )
+          }
         >
           <HelpCircle className="w-5 h-5" />
           <span className="font-medium">Support</span>
-        </a>
-        <a
-          href="#"
-          className="flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+        </NavLink>
+        <button
+          onClick={() => {
+            /* Add logout logic */
+          }}
+          className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
         >
           <LogOut className="w-5 h-5" />
           <span className="font-medium">Logout</span>
-        </a>
+        </button>
       </div>
     </div>
   );
 };
 
 export default Sidebar;
+
