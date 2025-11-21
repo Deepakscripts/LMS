@@ -25,7 +25,7 @@ import {
 // Reusing Sidebar Layout for consistency
 // In a real app, the Sidebar would be a shared layout component
 
-const Support = () => {
+const StudentSupportPage = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [category, setCategory] = useState('Select a topic');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -305,4 +305,4 @@ const Support = () => {
   );
 };
 
-export default Support;
+export default StudentSupportPage;

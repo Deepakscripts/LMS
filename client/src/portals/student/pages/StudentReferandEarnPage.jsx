@@ -15,7 +15,7 @@ import {
   X,
 } from 'lucide-react';
 
-const ReferAndEarn = () => {
+const StudentReferandEarnPage = () => {
   const [referralCode, setReferralCode] = useState('ALEX-J-2025');
   const [inputCode, setInputCode] = useState('');
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -288,4 +288,4 @@ const ReferAndEarn = () => {
   );
 };
 
-export default ReferAndEarn;
+export default StudentReferandEarnPage;

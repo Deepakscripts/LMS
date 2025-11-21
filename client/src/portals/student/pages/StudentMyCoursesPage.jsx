@@ -3,7 +3,7 @@ import { BookOpen, PlayCircle, Clock, Award } from 'lucide-react';
 // Link removed to prevent Router errors in preview
 // import { Link } from 'react-router-dom';
 
-const MyCourses = () => {
+const StudentMyCoursesPage = () => {
   const courses = [
     {
       id: 1,
@@ -82,4 +82,4 @@ const MyCourses = () => {
   );
 };
 
-export default MyCourses;
+export default StudentMyCoursesPage;

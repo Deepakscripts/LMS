@@ -8,6 +8,7 @@ import {
   Headphones,
   Settings,
   Crown,
+  Book,
   LogOut,
 } from 'lucide-react';
 import { useSelector } from 'react-redux';
@@ -21,7 +22,12 @@ const StudentNavbar = () => {
 
   const sidebarItems = [
     { label: 'Dashboard', icon: <LayoutDashboard size={20} />, navigation: '/student/' },
-    { label: 'My Courses', icon: <BookOpen size={20} />, navigation: '/student/my-courses' },
+    { label: 'My Courses', icon: <Book size={20} />, navigation: '/student/my-courses' },
+    {
+      label: 'Course Learning',
+      icon: <BookOpen size={20} />,
+      navigation: '/student/course-learning',
+    },
     { label: 'Assignments', icon: <FileText size={20} />, navigation: '/student/assignments' },
     { label: 'Quizzes', icon: <ClipboardList size={20} />, navigation: '/student/quizzes' },
     { label: 'Leaderboard', icon: <Crown size={20} />, navigation: '/student/leaderboard' },

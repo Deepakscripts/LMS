@@ -1,7 +1,7 @@
 import React from 'react';
 import { BookOpen, Clock, Award, TrendingUp, PlayCircle } from 'lucide-react';
 
-const Dashboard = () => {
+const StudentDashboardPage = () => {
   const studentName = 'Alex Johnson';
 
   const stats = [
@@ -212,4 +212,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default StudentDashboardPage;

@@ -21,7 +21,7 @@ import {
 
 // Reusing Sidebar Layout
 
-const Settings = () => {
+const StudentSettingsPage = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   // Use window.location.pathname as a fallback for active state in preview
@@ -365,4 +365,4 @@ const Settings = () => {
   );
 };
 
-export default Settings;
+export default StudentSettingsPage;

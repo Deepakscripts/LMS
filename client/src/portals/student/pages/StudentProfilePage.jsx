@@ -28,7 +28,7 @@ import {
 // Link removed to prevent Router errors in preview
 // import { Link } from 'react-router-dom';
 
-const Profile = () => {
+const StudentProfilePage = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   // Use window.location.pathname as a fallback for active state in preview
@@ -422,4 +422,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default StudentProfilePage;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Crown, Zap, Flame, Target } from 'lucide-react';
 
-const Leaderboard = () => {
+const StudentLeaderboardPage = () => {
   const [leaderboardFilter, setLeaderboardFilter] = useState('Global');
 
   const leaderboardData = [
@@ -181,4 +181,4 @@ const Leaderboard = () => {
   );
 };
 
-export default Leaderboard;
+export default StudentLeaderboardPage;
