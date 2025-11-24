@@ -232,7 +232,7 @@ function Home() {
           <div className="max-w-7xl mx-auto px-4 text-center relative z-10">
             <h1 className="text-5xl md:text-7xl font-extrabold mb-6">
               Master Tech Skills <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-cyan-300">
                 The Practical Way
               </span>
             </h1>
@@ -304,7 +304,7 @@ function Home() {
         </section>
 
         {/* BENEFITS SECTION */}
-        <section className="py-24 bg-gradient-to-b from-black to-zinc-900">
+        <section className="py-24 bg-linear-to-b from-black to-zinc-900">
           <div className="max-w-7xl mx-auto px-4 grid lg:grid-cols-2 gap-16 items-center">
             <div>
               <h2 className="text-4xl font-bold mb-6">More Than Just A Course</h2>
@@ -414,7 +414,7 @@ function Home() {
                       href={item.linkedin}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`w-10 h-10 rounded-full bg-gradient-to-br ${item.color} flex items-center justify-center text-white font-bold hover:scale-110 transition`}
+                      className={`w-10 h-10 rounded-full bg-linear-to-br ${item.color} flex items-center justify-center text-white font-bold hover:scale-110 transition`}
                     >
                       {item.name.charAt(0)}
                     </a>

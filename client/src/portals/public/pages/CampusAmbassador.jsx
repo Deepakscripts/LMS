@@ -39,7 +39,7 @@ function CampusAmbassador() {
           <h1 className="text-4xl md:text-7xl  font-extrabold text-center ">
             {' '}
             Be the{' '}
-            <span className=" bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-red-400">
+            <span className=" bg-clip-text text-transparent bg-linear-to-r from-blue-400 to-red-400">
               {' '}
               Campus CEO{' '}
             </span>{' '}
@@ -128,7 +128,7 @@ function CampusAmbassador() {
       </section>
 
       <div className="px-[10vw]">
-        <div className="bg-gradient-to-r from-blue-500 flex justify-between rounded-2xl px-16  py-14 to-purple-500">
+        <div className="bg-linear-to-r from-blue-500 flex justify-between rounded-2xl px-16  py-14 to-purple-500">
           <div className="flex flex-col gap-3">
             <h2 className="text-4xl font-bold ">Top Performer Rewards</h2>
             <p className="text-lg text-gray-200">
