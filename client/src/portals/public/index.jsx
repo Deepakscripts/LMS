@@ -20,6 +20,8 @@ import Python from './pages/PythonSalePage.jsx';
 import MobileDev from './pages/MobileDevSalesPage.jsx';
 import UX from './pages/UXSalesPage.jsx';
 import AboutUs from './pages/AboutUSPage.jsx';
+import EnrollmentDetails from './pages/EnrollmentForm.jsx';
+import EnrollmentPayment from './components/UpdatedPaymentPage.jsx';
 
 const PublicPortal = () => {
   return (
@@ -45,6 +47,8 @@ const PublicPortal = () => {
           <Route path="/python" element={<Python />} />
           <Route path="/mobiledev" element={<MobileDev />} />
           <Route path="/ux" element={<UX />} />
+          <Route path="/enroll" element={<EnrollmentDetails />} />
+          <Route path="/enroll/payment" element={<EnrollmentPayment />} />
         </Route>
       </Routes>
     </>
