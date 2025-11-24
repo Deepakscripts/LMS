@@ -14,7 +14,7 @@ const CertificateManagement = () => {
       course: 'Advanced Python Programming',
       avatar: 'https://i.pravatar.cc/150?img=1',
       completedDate: '15 Aug 2024',
-      status: 'Completed'
+      status: 'Completed',
     },
     {
       id: 2,
@@ -22,8 +22,8 @@ const CertificateManagement = () => {
       course: 'UI/UX Design Fundamentals',
       avatar: 'https://i.pravatar.cc/150?img=5',
       completedDate: '10 Aug 2024',
-      status: 'Completed'
-    }
+      status: 'Completed',
+    },
   ];
 
   const studentsIssued = [
@@ -33,7 +33,7 @@ const CertificateManagement = () => {
       course: 'Data Science with R',
       avatar: 'https://i.pravatar.cc/150?img=8',
       issuedDate: '12 Aug 2024',
-      status: 'Issued'
+      status: 'Issued',
     },
     {
       id: 4,
@@ -41,7 +41,7 @@ const CertificateManagement = () => {
       course: 'Machine Learning Basics',
       avatar: 'https://i.pravatar.cc/150?img=12',
       issuedDate: '05 Aug 2024',
-      status: 'Issued'
+      status: 'Issued',
     },
     {
       id: 5,
@@ -49,18 +49,20 @@ const CertificateManagement = () => {
       course: 'Machine Learning Basics',
       avatar: 'https://i.pravatar.cc/150?img=12',
       issuedDate: '05 Aug 2024',
-      status: 'Issued'
-    }
+      status: 'Issued',
+    },
   ];
 
-  const filteredReadyStudents = studentsReadyToIssue.filter(student =>
-    student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.course.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredReadyStudents = studentsReadyToIssue.filter(
+    student =>
+      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.course.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const filteredIssuedStudents = studentsIssued.filter(student =>
-    student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.course.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredIssuedStudents = studentsIssued.filter(
+    student =>
+      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.course.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -78,7 +80,7 @@ const CertificateManagement = () => {
               type="text"
               placeholder="Search by student name or course..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
             />
           </div>
@@ -110,110 +112,100 @@ const CertificateManagement = () => {
 
         {/* Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {activeTab === 'ready' ? (
-            filteredReadyStudents.map((student) => (
-              <div
-                key={student.id}
-                className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
-              >
-                {/* Student Info */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={student.avatar}
-                      alt={student.name}
-                      className="w-14 h-14 rounded-full object-cover"
-                    />
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {student.name}
-                      </h3>
-                      <p className="text-sm text-gray-600">{student.course}</p>
+          {activeTab === 'ready'
+            ? filteredReadyStudents.map(student => (
+                <div
+                  key={student.id}
+                  className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                >
+                  {/* Student Info */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={student.avatar}
+                        alt={student.name}
+                        className="w-14 h-14 rounded-full object-cover"
+                      />
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">{student.name}</h3>
+                        <p className="text-sm text-gray-600">{student.course}</p>
+                      </div>
+                    </div>
+                    <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0">
+                      {student.status}
+                    </Badge>
+                  </div>
+
+                  {/* Date and Actions */}
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-gray-600">Completed: {student.completedDate}</p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2 border-blue-200 text-blue-600 hover:bg-blue-50"
+                      >
+                        <Eye className="w-4 h-4" />
+                        Preview
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Award className="w-4 h-4" />
+                        Issue Certificate
+                      </Button>
                     </div>
                   </div>
-                  <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0">
-                    {student.status}
-                  </Badge>
                 </div>
-
-                {/* Date and Actions */}
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-600">
-                    Completed: {student.completedDate}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2 border-blue-200 text-blue-600 hover:bg-blue-50"
-                    >
-                      <Eye className="w-4 h-4" />
-                      Preview
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                    >
-                      <Award className="w-4 h-4" />
-                      Issue Certificate
-                    </Button>
+              ))
+            : filteredIssuedStudents.map(student => (
+                <div
+                  key={student.id}
+                  className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                >
+                  {/* Student Info */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={student.avatar}
+                        alt={student.name}
+                        className="w-14 h-14 rounded-full object-cover"
+                      />
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">{student.name}</h3>
+                        <p className="text-sm text-gray-600">{student.course}</p>
+                      </div>
+                    </div>
+                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-0">
+                      {student.status}
+                    </Badge>
                   </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            filteredIssuedStudents.map((student) => (
-              <div
-                key={student.id}
-                className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
-              >
-                {/* Student Info */}
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={student.avatar}
-                      alt={student.name}
-                      className="w-14 h-14 rounded-full object-cover"
-                    />
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {student.name}
-                      </h3>
-                      <p className="text-sm text-gray-600">{student.course}</p>
+
+                  {/* Date and Actions */}
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-gray-600">Issued: {student.issuedDate}</p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2 border-gray-200 text-gray-700 hover:bg-gray-50"
+                      >
+                        <Eye className="w-4 h-4" />
+                        Preview
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2 border-gray-200 text-gray-700 hover:bg-gray-50"
+                      >
+                        <RotateCw className="w-4 h-4" />
+                        Re-issue
+                      </Button>
                     </div>
                   </div>
-                  <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-0">
-                    {student.status}
-                  </Badge>
                 </div>
-
-                {/* Date and Actions */}
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-600">
-                    Issued: {student.issuedDate}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2 border-gray-200 text-gray-700 hover:bg-gray-50"
-                    >
-                      <Eye className="w-4 h-4" />
-                      Preview
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex items-center gap-2 border-gray-200 text-gray-700 hover:bg-gray-50"
-                    >
-                      <RotateCw className="w-4 h-4" />
-                      Re-issue
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
+              ))}
         </div>
 
         {/* Empty State */}

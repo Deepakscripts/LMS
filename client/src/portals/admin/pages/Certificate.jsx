@@ -1,7 +1,7 @@
-import React from 'react'
-import TopBar from '../components/TopBar'
-import Sidebar from '../components/Sidebar'
-import CertificateManagement from '../components/CertificateManagement'
+import React from 'react';
+import TopBar from '../components/TopBar';
+import Sidebar from '../components/Sidebar';
+import CertificateManagement from '../components/CertificateManagement';
 
 function Certificate() {
   return (
@@ -18,7 +18,7 @@ function Certificate() {
         </main>
       </div>
     </div>
-  )
+  );
 }
 
-export default Certificate
+export default Certificate;

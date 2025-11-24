@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ChevronRight } from 'lucide-react';
 
 export default function ProgramsGrid({ programs }) {
   const INITIAL_VISIBLE = 8;
@@ -24,14 +24,18 @@ export default function ProgramsGrid({ programs }) {
               transition-all duration-500 ease-out animate-fadeSlide"
             >
               {/* Hover Glow */}
-              <div className="absolute inset-0 bg-blue-600/5 rounded-2xl opacity-0 
-              group-hover:opacity-100 transition-opacity pointer-events-none z-0"></div>
+              <div
+                className="absolute inset-0 bg-blue-600/5 rounded-2xl opacity-0 
+              group-hover:opacity-100 transition-opacity pointer-events-none z-0"
+              ></div>
 
               {/* Content */}
               <div className="relative z-10 flex flex-col h-full">
                 <div className="flex-1">
-                  <div className="mb-4 bg-black w-14 h-14 rounded-xl flex items-center justify-center 
-                  border border-zinc-800 group-hover:border-blue-500/30">
+                  <div
+                    className="mb-4 bg-black w-14 h-14 rounded-xl flex items-center justify-center 
+                  border border-zinc-800 group-hover:border-blue-500/30"
+                  >
                     {program.icon}
                   </div>
 
@@ -49,12 +53,12 @@ export default function ProgramsGrid({ programs }) {
                   <div className="flex items-center justify-between mt-auto pt-4 border-t border-zinc-800">
                     <div>
                       <span className="block text-xs text-gray-500">Enrollment Fee</span>
-                      <span className="text-lg font-bold text-white">
-                        {program.price}
-                      </span>
+                      <span className="text-lg font-bold text-white">{program.price}</span>
                     </div>
-                    <button className="p-2 rounded-lg bg-white text-black 
-                      hover:bg-blue-500 hover:text-white transition-colors">
+                    <button
+                      className="p-2 rounded-lg bg-white text-black 
+                      hover:bg-blue-500 hover:text-white transition-colors"
+                    >
                       <ChevronRight size={20} />
                     </button>
                   </div>
@@ -74,10 +78,10 @@ export default function ProgramsGrid({ programs }) {
             hover:border-blue-500/50 text-white transition-all duration-300
             transform hover:scale-105"
           >
-            {isExpanded ? "Show Less" : "Show More"}
+            {isExpanded ? 'Show Less' : 'Show More'}
             <span
               className={`ml-2 inline-block transition-transform duration-300 ${
-                isExpanded ? "rotate-180" : "rotate-0"
+                isExpanded ? 'rotate-180' : 'rotate-0'
               }`}
             >
               ▾

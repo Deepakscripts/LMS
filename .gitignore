@@ -4,6 +4,9 @@ npm-debug.log
 yarn-error.log
 .DS_Store
 
+node_modules
+package-lock.json
+
 # Server
 server/node_modules/
 server/.env

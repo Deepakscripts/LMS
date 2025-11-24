@@ -9,6 +9,7 @@ const initialState = {
   loading: false,
   currentNavigation: '/',
   studentSidebarOpen: false,
+  adminSidebarOpen: false,
 };
 
 const globalSlice = createSlice({
@@ -38,8 +39,12 @@ const globalSlice = createSlice({
     setStudentSidebarOpen: (state, action) => {
       state.studentSidebarOpen = action.payload;
     },
+    setAdminSidebarOpen: (state, action) => {
+      state.adminSidebarOpen = action.payload;
+    },
   },
 });
 
-export const { login, logout, setNavigation, setStudentSidebarOpen } = globalSlice.actions;
+export const { login, logout, setNavigation, setStudentSidebarOpen, setAdminSidebarOpen } =
+  globalSlice.actions;
 export default globalSlice.reducer;

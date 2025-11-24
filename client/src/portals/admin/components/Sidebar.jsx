@@ -10,157 +10,109 @@ import {
   Megaphone,
   FileBadge,
 } from 'lucide-react';
-import { NavLink } from 'react-router-dom';
-import { cn } from '../lib/utils';
+import { useSelector } from 'react-redux';
+import { useNavigateWithRedux } from '@/common/hooks/useNavigateWithRedux';
+
+const sidebarContent = [
+  { label: 'Dashboard', navigation: '/admin', icon: LayoutDashboard, isButton: false },
+  { label: 'Analytics', navigation: '/admin/analytics', icon: BarChart3, isButton: false },
+  { label: 'Students', navigation: '/admin/students', icon: Users, isButton: false },
+  { label: 'Courses', navigation: '/admin/courses', icon: BookOpen, isButton: false },
+  { label: 'Announcements', navigation: '/admin/announcements', icon: Megaphone, isButton: false },
+  {
+    label: 'Manage Certificate',
+    navigation: '/admin/certificate',
+    icon: FileBadge,
+    isButton: false,
+  },
+  { label: 'Settings', navigation: '/admin/settings', icon: Settings, isButton: false },
+  { label: 'Support', navigation: '/admin/support', icon: HelpCircle, isButton: false },
+  { label: 'Logout', icon: LogOut, isButton: true },
+];
 
 const Sidebar = () => {
+  const navigateAndStore = useNavigateWithRedux();
+  const activeTab = useSelector(state => state.global.currentNavigation);
+
+  const handleLogout = () => {
+    // TODO: Add your logout logic here
+    console.log('Logging out...');
+  };
+
+  const handleClick = item => {
+    if (item.isButton) {
+      handleLogout();
+    } else {
+      navigateAndStore(item.navigation);
+    }
+  };
+
+  const mainItems = sidebarContent.filter(item => !['Support', 'Logout'].includes(item.label));
+  const bottomItems = sidebarContent.filter(item => ['Support', 'Logout'].includes(item.label));
+
   return (
-    <div className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
+    <div className="h-screen w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col text-zinc-400">
       {/* Logo Section */}
-      <div className="px-6 py-4 border-b border-gray-200">
+      <div className="px-6 py-4 border-b border-zinc-800">
         <div className="flex items-center space-x-3">
-          <div className="size-[2.95rem] bg-blue-500 rounded-lg flex items-center justify-center border">
+          <div className="size-[2.95rem] bg-blue-500 rounded-lg flex items-center justify-center border border-blue-500">
             <span className="text-white font-bold text-sm">C2</span>
           </div>
           <div>
-            <h2 className="font-semibold text-gray-900">Code2Dbug</h2>
-            <p className="text-xs text-gray-500">Admin Panel</p>
+            <h2 className="font-semibold text-blue-500">Code2Dbug</h2>
+            <p className="text-xs">Admin Panel</p>
           </div>
         </div>
       </div>
 
       {/* Navigation Items */}
       <nav className="flex-1 p-4">
-        <ul className="space-y-1">
-          <li>
-            <NavLink
-              to="/admin"
-              end
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
-                  isActive && 'text-blue-600 bg-blue-50',
-                )
-              }
-            >
-              <LayoutDashboard className="w-5 h-5" />
-              <span className="font-medium">Dashboard</span>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/admin/analytics"
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
-                  isActive && 'text-blue-600 bg-blue-50',
-                )
-              }
-            >
-              <BarChart3 className="w-5 h-5" />
-              <span className="font-medium">Analytics</span>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/admin/students"
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
-                  isActive && 'text-blue-600 bg-blue-50',
-                )
-              }
-            >
-              <Users className="w-5 h-5" />
-              <span className="font-medium">Students</span>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/admin/courses"
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
-                  isActive && 'text-blue-600 bg-blue-50',
-                )
-              }
-            >
-              <BookOpen className="w-5 h-5" />
-              <span className="font-medium">Courses</span>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/admin/announcements"
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
-                  isActive && 'text-blue-600 bg-blue-50',
-                )
-              }
-            >
-              <Megaphone className="w-5 h-5" />
-              <span className="font-medium">Announcements</span>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/admin/certificate"
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
-                  isActive && 'text-blue-600 bg-blue-50',
-                )
-              }
-            >
-              <FileBadge className="w-5 h-5" />
-              <span className="font-medium">Manage Certificate</span>
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/admin/settings"
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
-                  isActive && 'text-blue-600 bg-blue-50',
-                )
-              }
-            >
-              <Settings className="w-5 h-5" />
-              <span className="font-medium">Settings</span>
-            </NavLink>
-          </li>
+        <ul className="space-y-2">
+          {mainItems.map(item => {
+            const Icon = item.icon;
+            return (
+              <li key={item.label}>
+                <button
+                  onClick={() => handleClick(item)}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+                    activeTab === item.navigation
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20 font-medium'
+                      : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium">{item.label}</span>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       </nav>
 
       {/* Bottom Section */}
-      <div className="p-4 border-t border-gray-200">
-        <NavLink
-          to="/admin/support"
-          className={({ isActive }) =>
-            cn(
-              'flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors',
-              isActive && 'text-blue-600 bg-blue-50',
-            )
-          }
-        >
-          <HelpCircle className="w-5 h-5" />
-          <span className="font-medium">Support</span>
-        </NavLink>
-        <button
-          onClick={() => {
-            /* Add logout logic */
-          }}
-          className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-        >
-          <LogOut className="w-5 h-5" />
-          <span className="font-medium">Logout</span>
-        </button>
+      <div className="p-4 border-t border-zinc-800 space-y-2">
+        {bottomItems.map(item => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.label}
+              onClick={() => handleClick(item)}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all ${
+                item.isButton
+                  ? 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+                  : activeTab === item.navigation
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20 font-medium'
+                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="font-medium">{item.label}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 };
 
 export default Sidebar;
-

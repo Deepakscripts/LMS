@@ -62,24 +62,24 @@ const Footer = () => {
               <div>
                 <h4 className="font-bold mb-4 text-lg  text-white">Connect</h4>
                 <ul className="space-y-2 text-sm text-gray-500">
-                  <li className='flex ' >
+                  <li className="flex ">
                     <Link to="#" className="hover:text-blue-400 gap-3 text-lg  flex flex-row ">
-                      <Twitter />  Twitter / X
+                      <Twitter /> Twitter / X
                     </Link>
                   </li>
                   <li>
                     <Link to="#" className="hover:text-blue-400 gap-3 text-lg  flex flex-row ">
-                      <Linkedin />  LinkedIn
+                      <Linkedin /> LinkedIn
                     </Link>
                   </li>
                   <li>
                     <Link to="#" className="hover:text-blue-400  gap-3 text-lg  flex flex-row ">
-                      <Github />  Github
+                      <Github /> Github
                     </Link>
                   </li>
                   <li>
                     <Link to="#" className="hover:text-blue-400  gap-3 text-lg  flex flex-row ">
-                     <MessageSquareQuote />  Discord
+                      <MessageSquareQuote /> Discord
                     </Link>
                   </li>
                 </ul>

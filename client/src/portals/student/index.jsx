@@ -6,7 +6,7 @@ import StudentMyCoursesPage from './pages/StudentMyCoursesPage';
 import StudentCurrentLearningPage from './pages/StudentCurrentLearningPage';
 import StudentAssignmentsPage from './pages/StudentAssignmentsPage';
 import StudentQuizzesPage from './pages/StudentQuizzesPage';
-import StudentLeaderboardPage from './pages/StudentLeaderBoardPage';
+import StudentLeaderboardPage from './pages/StudentLeaderboardPage';
 import StudentCertificatesPage from './pages/StudentCertificatesPage';
 import StudentReferandEarnPage from './pages/StudentReferandEarnPage';
 import StudentSupportPage from './pages/StudentSupportPage';
