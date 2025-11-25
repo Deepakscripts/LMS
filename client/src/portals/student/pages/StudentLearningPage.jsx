@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ChevronDown,
   ChevronUp,
@@ -26,6 +26,16 @@ const StudentLearningPage = () => {
   const [activeModule, setActiveModule] = useState(1);
   const [activeLesson, setActiveLesson] = useState(null);
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   // Mock courses data
   const courses = {
     'full-stack-web-development': {
@@ -110,7 +120,7 @@ const StudentLearningPage = () => {
 
   const courseData = courses[coursename];
 
-  const [bar, setbar] = React.useState(false);
+  const [bar, setbar] = React.useState(true);
 
   return (
     <div className="flex h-full relative bg-black text-white font-sans selection:bg-blue-500 selection:text-white">
@@ -214,6 +224,9 @@ const StudentLearningPage = () => {
                       key={lesson.id}
                       onClick={() => {
                         setActiveLesson(lesson);
+                        if (isMobile) {
+                          setbar(false);
+                        }
                       }}
                       className={`w-full p-3 pl-11 flex items-center gap-3 text-sm hover:bg-blue-900/20 transition-colors border-l-2 ${activeLesson?.id === lesson.id ? 'border-blue-500 bg-blue-900/10 text-blue-400' : 'border-transparent text-zinc-400'}`}
                     >
