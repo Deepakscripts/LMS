@@ -3,7 +3,7 @@ import * as am5 from '@amcharts/amcharts5';
 import * as am5xy from '@amcharts/amcharts5/xy';
 import am5themes_Animated from '@amcharts/amcharts5/themes/Animated';
 
-export default function LineChart({ data, height = 400 }) {
+export default function StudentGrowthChart({ data, height = 400 }) {
   const chartDivRef = useRef(null);
   const rootRef = useRef(null);
 
@@ -171,3 +171,4 @@ export default function LineChart({ data, height = 400 }) {
     </div>
   );
 }
+

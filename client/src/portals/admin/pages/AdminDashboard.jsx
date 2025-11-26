@@ -2,7 +2,7 @@ import React from 'react';
 import DashboardHeader from '../components/DashboardHeader';
 import StatsCardsSection from '../components/StatsCardsSection';
 import EnrollmentsTable from '../components/EnrollmentsTable';
-import ColumnWithRotatedLabels from '../components/ColumnChart';
+import ColumnWithRotatedLabels from '../components/CourseCompletionsTrend';
 import DoughnutChart from '../components/DoughnutChart';
 
 function AdminDashboard() {
@@ -46,3 +46,4 @@ function AdminDashboard() {
 }
 
 export default AdminDashboard;
+
