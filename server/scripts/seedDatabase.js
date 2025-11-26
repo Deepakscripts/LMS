@@ -13,6 +13,7 @@ import Submission from "../models/Submission.js";
 import Leaderboard from "../models/Leaderboard.js";
 import Referral from "../models/Referral.js";
 import SupportQuery from "../models/SupportQuery.js";
+import RefreshToken from "../models/RefreshToken.js";
 
 // Config
 const __filename = fileURLToPath(import.meta.url);
@@ -45,6 +46,7 @@ const users = [
     collegeName: "Code2Dbug Academy",
     courseName: "Administration",
     yearOfStudy: "N/A",
+    courses: [], // Admin doesn't have enrolled courses
   },
   {
     email: "alex.johnson@example.com",
@@ -65,6 +67,7 @@ const users = [
     assignmentsCompleted: 3,
     lmsId: "LMS001",
     lmsPassword: "lmspass123",
+    courses: [], // Will be populated after courses are created
   },
   {
     email: "sarah.connor@example.com",
@@ -83,6 +86,7 @@ const users = [
     assignmentsCompleted: 10,
     lmsId: "LMS002",
     lmsPassword: "lmspass123",
+    courses: [],
   },
   {
     email: "john.wick@example.com",
@@ -101,6 +105,7 @@ const users = [
     assignmentsCompleted: 8,
     lmsId: "LMS003",
     lmsPassword: "lmspass123",
+    courses: [],
   },
   {
     email: "tony.stark@example.com",
@@ -119,6 +124,7 @@ const users = [
     assignmentsCompleted: 12,
     lmsId: "LMS004",
     lmsPassword: "lmspass123",
+    courses: [],
   },
   {
     email: "bruce.wayne@example.com",
@@ -137,6 +143,25 @@ const users = [
     assignmentsCompleted: 6,
     lmsId: "LMS005",
     lmsPassword: "lmspass123",
+    courses: [],
+  },
+  {
+    // Unenrolled student (new status)
+    email: "peter.parker@example.com",
+    password: "student123456",
+    name: "Peter",
+    lastName: "Parker",
+    role: "student",
+    accountStatus: "unenrolled",
+    collegeName: "Empire State University",
+    courseName: "B.Tech Physics",
+    yearOfStudy: "2nd Year",
+    xp: 0,
+    streak: 0,
+    hoursLearned: 0,
+    quizzesCompleted: 0,
+    assignmentsCompleted: 0,
+    courses: [],
   },
 ];
 
@@ -625,13 +650,14 @@ const courses = [
 const seedUsers = async () => {
   console.log("🌱 Seeding Users...");
   await User.deleteMany({});
+  await RefreshToken.deleteMany({}); // Clear refresh tokens when clearing users
 
   const createdUsers = [];
   for (const userData of users) {
     const user = new User(userData);
     await user.save();
     createdUsers.push(user);
-    console.log(`   ✓ Created user: ${user.email}`);
+    console.log(`   ✓ Created user: ${user.email} (${user.accountStatus})`);
   }
   return createdUsers;
 };
@@ -693,6 +719,12 @@ const seedEnrollments = async (students, courses) => {
       lmsIssuedPassword: "lms123456",
     });
     enrollments.push(enrollment);
+    
+    // Update user's courses array
+    await User.findByIdAndUpdate(alex._id, {
+      $addToSet: { courses: fullStackCourse._id }
+    });
+    
     console.log(`   ✓ Enrolled ${alex.name} in ${fullStackCourse.title}`);
   }
 
@@ -718,6 +750,12 @@ const seedEnrollments = async (students, courses) => {
       progressPercentage: 10,
     });
     enrollments.push(enrollment);
+    
+    // Update user's courses array
+    await User.findByIdAndUpdate(alex._id, {
+      $addToSet: { courses: dsaCourse._id }
+    });
+    
     console.log(`   ✓ Enrolled ${alex.name} in ${dsaCourse.title}`);
   }
 
@@ -743,6 +781,12 @@ const seedEnrollments = async (students, courses) => {
       progressPercentage: 85,
     });
     enrollments.push(enrollment);
+    
+    // Update user's courses array
+    await User.findByIdAndUpdate(sarah._id, {
+      $addToSet: { courses: fullStackCourse._id }
+    });
+    
     console.log(`   ✓ Enrolled ${sarah.name} in ${fullStackCourse.title}`);
   }
 
@@ -927,8 +971,10 @@ const seedDatabase = async () => {
     console.log(`   • Courses: ${createdCourses.length}`);
     console.log(`   • Enrollments: ${enrollments.length}`);
     console.log("\n🔑 Test Credentials:");
-    console.log("   Admin:   admin@code2dbug.com / admin123456");
-    console.log("   Student: alex.johnson@example.com / student123456");
+    console.log("   Admin:      admin@code2dbug.com / admin123456");
+    console.log("   Student:    alex.johnson@example.com / student123456");
+    console.log("   LMS Login:  LMS001 / lmspass123");
+    console.log("   Unenrolled: peter.parker@example.com / student123456");
     console.log("");
 
     process.exit(0);

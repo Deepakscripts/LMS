@@ -49,10 +49,17 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
 
+    courses: [
+      {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course"
+      }
+    ],
+
     accountStatus: {
       type: String,
-      enum: ["pending", "verified", "blocked"],
-      default: "pending",
+      enum: ["unenrolled", "pending", "verified", "blocked"],
+      default: "unenrolled",
     },
 
     // LMS LOGIN
