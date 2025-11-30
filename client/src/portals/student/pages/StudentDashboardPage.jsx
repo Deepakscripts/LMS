@@ -118,10 +118,10 @@ const StudentDashboardPage = () => {
 
       {/* Continue Learning Card */}
       {activeCourse ? (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-1 overflow-hidden relative group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-[80px] pointer-events-none"></div>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden relative group">
+          <div className="absolute top-0 left-0 w-64 h-64 bg-blue-600/10 rounded-full blur-[80px] pointer-events-none"></div>
 
-          <div className="p-6 sm:p-8 relative z-10">
+          <div className="p-6 sm:p-8 relative">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <span className="text-blue-400 text-xs font-bold uppercase tracking-wider">

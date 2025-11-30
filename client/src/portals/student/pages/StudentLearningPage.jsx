@@ -122,12 +122,12 @@ const StudentLearningPage = () => {
   const overallProgress = progress?.progressPercentage || course.progress || 0;
 
   return (
-    <div className="flex h-full relative bg-black text-white font-sans selection:bg-blue-500 selection:text-white">
+    <div className="flex h-full relative bg-black text-white font-sans selection:bg-blue-500 selection:text-white overflow-hidden">
       {/* Main Content Area */}
-      <div className="grow overflow-hidden p-6 md:p-10">
+      <div className="grow overflow-y-auto p-6 md:p-10">
         {/* No selection state */}
         {!activeContent && (
-          <div className="flex flex-col items-center justify-center h-full text-zinc-500">
+          <div className="container mx-auto flex flex-col items-center justify-center h-full text-zinc-500">
             <Notebook size={64} className="mb-4 opacity-20" />
             <h2 className="text-2xl font-bold text-zinc-300">Select content to start learning</h2>
             <p>Choose a module from the sidebar.</p>
@@ -136,7 +136,7 @@ const StudentLearningPage = () => {
 
         {/* Text Link Content */}
         {activeContent?.type === 'textLink' && (
-          <div className="space-y-6">
+          <div className="container mx-autospace-y-6">
             <div className="bg-zinc-900 rounded-xl border border-zinc-800 p-8">
               <div className="flex items-center gap-3 mb-6">
                 <FileText size={32} className="text-blue-400" />
@@ -164,7 +164,7 @@ const StudentLearningPage = () => {
 
         {/* Video Link Content */}
         {activeContent?.type === 'videoLink' && (
-          <div className="space-y-6">
+          <div className=" container mx-auto space-y-6">
             <div className="aspect-video bg-black rounded-xl border border-zinc-800 overflow-hidden">
               {activeContent.data.url.includes('youtube.com') ||
               activeContent.data.url.includes('youtu.be') ? (
