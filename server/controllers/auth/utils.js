@@ -8,10 +8,10 @@ import ms from "ms";
  * @returns {Object} Cookie configuration object
  */
 export const getAccessTokenCookieOptions = () => ({
-  httpOnly: true, // Prevents XSS attacks - JavaScript cannot access
-  secure: true, // HTTPS only in production
-  sameSite: "strict", // Prevents CSRF attacks
-  maxAge: ms(process.env.ACCESS_TOKEN_EXPIRY),
+    httpOnly: true, // Prevents XSS attacks - JavaScript cannot access
+    secure: true, // HTTPS only in production
+    sameSite: "strict", // Prevents CSRF attacks
+    maxAge: ms(process.env.ACCESS_TOKEN_EXPIRY),
 });
 
 /**
@@ -22,10 +22,10 @@ export const getAccessTokenCookieOptions = () => ({
  * @returns {Object} Cookie configuration object
  */
 export const getRefreshTokenCookieOptions = () => ({
-  httpOnly: true, // Prevents XSS attacks
-  secure: true, // HTTPS only in production
-  sameSite: "strict", // Prevents CSRF attacks
-  maxAge: ms(process.env.REFRESH_TOKEN_EXPIRY),
+    httpOnly: true, // Prevents XSS attacks
+    secure: true, // HTTPS only in production
+    sameSite: "strict", // Prevents CSRF attacks
+    maxAge: ms(process.env.REFRESH_TOKEN_EXPIRY),
 });
 
 /**
@@ -33,8 +33,8 @@ export const getRefreshTokenCookieOptions = () => ({
  * @param {Object} res - Express response object
  */
 export const clearAuthCookies = (res) => {
-  res.clearCookie("accessToken");
-  res.clearCookie("refreshToken", { path: "/api/auth/refresh" });
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken", { path: "/api/auth/refresh" });
 };
 
 /**
@@ -44,8 +44,8 @@ export const clearAuthCookies = (res) => {
  * @param {string} refreshToken - JWT refresh token
  */
 export const setAuthCookies = (res, accessToken, refreshToken) => {
-  res.cookie("accessToken", accessToken, getAccessTokenCookieOptions());
-  res.cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
+    res.cookie("accessToken", accessToken, getAccessTokenCookieOptions());
+    res.cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
 };
 
 /**
@@ -54,12 +54,12 @@ export const setAuthCookies = (res, accessToken, refreshToken) => {
  * @returns {Object} Formatted admin object
  */
 export const formatUserResponse = (admin) => ({
-  id: admin._id,
-  email: admin.email,
-  name: admin.name,
-  lastName: admin.lastName,
-  role: "admin",
-  avatar: admin.avatar,
+    id: admin._id,
+    email: admin.email,
+    name: admin.name,
+    lastName: admin.lastName,
+    role: "admin",
+    avatar: admin.avatar,
 });
 
 /**
@@ -68,12 +68,12 @@ export const formatUserResponse = (admin) => ({
  * @returns {Object} Formatted student object
  */
 export const formatStudentResponse = (student) => ({
-  id: student._id,
-  email: student.email,
-  name: student.name,
-  lastName: student.lastName,
-  lmsId: student.lmsId,
-  role: "student",
-  accountStatus: student.accountStatus,
-  avatar: student.avatar,
+    id: student._id,
+    email: student.email,
+    name: student.name,
+    lastName: student.lastName,
+    lmsId: student.lmsId,
+    role: "student",
+    accountStatus: student.accountStatus,
+    avatar: student.avatar,
 });

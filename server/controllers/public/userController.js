@@ -29,7 +29,9 @@ export const createEnrollment = async (req, res) => {
         // Validate referral code if provided
         let referrerExists = false;
         if (referredBy && referredBy.trim() !== "") {
-            const referrer = await Student.findOne({ myReferralCode: referredBy });
+            const referrer = await Student.findOne({
+                myReferralCode: referredBy,
+            });
             if (!referrer) {
                 return res.status(400).json({
                     success: false,

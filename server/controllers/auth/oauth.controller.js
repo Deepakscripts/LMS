@@ -14,29 +14,36 @@ import { setAuthCookies } from "./utils.js";
  * @returns {Promise<void>} Redirects to client URL with authentication status
  */
 export const handleOAuthCallback = async (req, res) => {
-  try {
-    const user = req.user;
+    try {
+        const user = req.user;
 
-    // Generate tokens
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
+        // Generate tokens
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
 
-    // Save refresh token to DB
-    await RefreshToken.saveRefreshToken(user._id, refreshToken, req, "Student");
+        // Save refresh token to DB
+        await RefreshToken.saveRefreshToken(
+            user._id,
+            refreshToken,
+            req,
+            "Student"
+        );
 
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
+        // Update last login
+        user.lastLogin = new Date();
+        await user.save();
 
-    // Set tokens in httpOnly cookies
-    setAuthCookies(res, accessToken, refreshToken);
+        // Set tokens in httpOnly cookies
+        setAuthCookies(res, accessToken, refreshToken);
 
-    // Redirect to client
-    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-    res.redirect(`${clientUrl}/auth-success`);
-  } catch (error) {
-    console.error("OAuth callback error:", error);
-    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-    res.redirect(`${clientUrl}/auth-error?message=${encodeURIComponent(error.message)}`);
-  }
+        // Redirect to client
+        const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+        res.redirect(`${clientUrl}/auth-success`);
+    } catch (error) {
+        console.error("OAuth callback error:", error);
+        const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+        res.redirect(
+            `${clientUrl}/auth-error?message=${encodeURIComponent(error.message)}`
+        );
+    }
 };

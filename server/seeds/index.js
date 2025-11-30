@@ -39,7 +39,9 @@ const seedDatabase = async () => {
 
             if (existingStudents > 0) {
                 console.log("⚠️  WARNING: Database already contains data!");
-                console.log(`   Found ${existingStudents} students in the database.`);
+                console.log(
+                    `   Found ${existingStudents} students in the database.`
+                );
                 console.log("\n   Options:");
                 console.log(
                     "   1. Run with --clear flag: npm run seed -- --clear"

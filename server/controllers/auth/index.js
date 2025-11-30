@@ -18,9 +18,9 @@ export { handleOAuthCallback } from "./oauth.controller.js";
 
 // Utilities (for internal use)
 export {
-  getAccessTokenCookieOptions,
-  getRefreshTokenCookieOptions,
-  setAuthCookies,
-  clearAuthCookies,
-  formatUserResponse,
+    getAccessTokenCookieOptions,
+    getRefreshTokenCookieOptions,
+    setAuthCookies,
+    clearAuthCookies,
+    formatUserResponse,
 } from "./utils.js";

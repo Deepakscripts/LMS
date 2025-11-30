@@ -50,9 +50,24 @@ export const seedUsers = async () => {
 
     // Test students with known LMS credentials
     const testStudents = [
-        { lmsId: "LMS001", name: "Test", lastName: "Student1", email: "student1@example.com" },
-        { lmsId: "LMS002", name: "Test", lastName: "Student2", email: "student2@example.com" },
-        { lmsId: "LMS003", name: "Test", lastName: "Student3", email: "student3@example.com" },
+        {
+            lmsId: "LMS001",
+            name: "Test",
+            lastName: "Student1",
+            email: "student1@example.com",
+        },
+        {
+            lmsId: "LMS002",
+            name: "Test",
+            lastName: "Student2",
+            email: "student2@example.com",
+        },
+        {
+            lmsId: "LMS003",
+            name: "Test",
+            lastName: "Student3",
+            email: "student3@example.com",
+        },
     ];
 
     for (const testStudent of testStudents) {

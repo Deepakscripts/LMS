@@ -147,9 +147,8 @@ export const getDashboardStats = async (req, res) => {
             status: "published",
             ...previousDateFilter,
         });
-        const prevCertificates = await Certificate.countDocuments(
-            previousDateFilter
-        );
+        const prevCertificates =
+            await Certificate.countDocuments(previousDateFilter);
 
         const prevRevenue = await Payment.aggregate([
             {
@@ -166,8 +165,8 @@ export const getDashboardStats = async (req, res) => {
             prevUsers > 0
                 ? (((totalUsers - prevUsers) / prevUsers) * 100).toFixed(1)
                 : totalUsers > 0
-                ? 100
-                : 0;
+                  ? 100
+                  : 0;
 
         const courseChange =
             prevCourses > 0
@@ -175,8 +174,8 @@ export const getDashboardStats = async (req, res) => {
                       1
                   )
                 : activeCourses > 0
-                ? 100
-                : 0;
+                  ? 100
+                  : 0;
 
         const certChange =
             prevCertificates > 0
@@ -186,8 +185,8 @@ export const getDashboardStats = async (req, res) => {
                       100
                   ).toFixed(1)
                 : certificatesIssued > 0
-                ? 100
-                : 0;
+                  ? 100
+                  : 0;
 
         const currentRevenue =
             revenueStats.length > 0 ? revenueStats[0].total : 0;
@@ -200,8 +199,8 @@ export const getDashboardStats = async (req, res) => {
                       100
                   ).toFixed(1)
                 : currentRevenue > 0
-                ? 100
-                : 0;
+                  ? 100
+                  : 0;
 
         // Calculate dynamic time spent change
         const prevTimeStats = await Enrollment.aggregate([
@@ -246,8 +245,8 @@ export const getDashboardStats = async (req, res) => {
                       100
                   ).toFixed(1)
                 : currentAvgTimeSpent > 0
-                ? 100
-                : 0;
+                  ? 100
+                  : 0;
 
         // Calculate dynamic completion rate change
         const prevCompletionStats = await Enrollment.aggregate([
@@ -273,8 +272,8 @@ export const getDashboardStats = async (req, res) => {
                       100
                   ).toFixed(1)
                 : avgCompletionRate > 0
-                ? 100
-                : 0;
+                  ? 100
+                  : 0;
 
         res.json({
             success: true,

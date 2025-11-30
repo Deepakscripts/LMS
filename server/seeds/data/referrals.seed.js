@@ -87,12 +87,14 @@ export const seedReferrals = async () => {
     });
 
     // Bulk update referral counts
-    const bulkOps = Object.entries(referrerCounts).map(([studentId, count]) => ({
-        updateOne: {
-            filter: { _id: studentId },
-            update: { $set: { referralCount: count } },
-        },
-    }));
+    const bulkOps = Object.entries(referrerCounts).map(
+        ([studentId, count]) => ({
+            updateOne: {
+                filter: { _id: studentId },
+                update: { $set: { referralCount: count } },
+            },
+        })
+    );
 
     if (bulkOps.length > 0) {
         await Student.bulkWrite(bulkOps);
@@ -117,5 +119,7 @@ export const seedReferrals = async () => {
         referralCount: { $gte: PREMIUM_THRESHOLD },
         isPremiumUnlocked: true,
     });
-    console.log(`🎉 ${premiumUnlocked} students unlocked premium via referrals`);
+    console.log(
+        `🎉 ${premiumUnlocked} students unlocked premium via referrals`
+    );
 };

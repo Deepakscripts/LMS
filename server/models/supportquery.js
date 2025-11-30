@@ -1,42 +1,48 @@
 import mongoose from "mongoose";
 
 const supportQuerySchema = new mongoose.Schema(
-  {
-    student: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Student",
-      required: true,
+    {
+        student: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Student",
+            required: true,
+        },
+
+        email: { type: String, required: true },
+
+        category: {
+            type: String,
+            enum: [
+                "courses",
+                "assignments",
+                "quizzes",
+                "certificates",
+                "other",
+            ],
+            required: true,
+        },
+
+        message: { type: String, required: true },
+
+        status: {
+            type: String,
+            enum: ["open", "in-progress", "resolved", "closed"],
+            default: "open",
+        },
+
+        priority: {
+            type: String,
+            enum: ["low", "medium", "high"],
+            default: "medium",
+        },
+
+        adminResponse: { type: String },
+        respondedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin" },
+        respondedAt: { type: Date },
+
+        resolvedAt: { type: Date },
     },
-
-    email: { type: String, required: true },
-
-    category: {
-      type: String,
-      enum: ["courses", "assignments", "quizzes", "certificates", "other"],
-      required: true,
-    },
-
-    message: { type: String, required: true },
-
-    status: {
-      type: String,
-      enum: ["open", "in-progress", "resolved", "closed"],
-      default: "open",
-    },
-
-    priority: {
-      type: String,
-      enum: ["low", "medium", "high"],
-      default: "medium",
-    },
-
-    adminResponse: { type: String },
-    respondedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Admin" },
-    respondedAt: { type: Date },
-
-    resolvedAt: { type: Date },
-  },
-  { timestamps: true }
+    { timestamps: true }
 );
 
 // Index for efficient queries

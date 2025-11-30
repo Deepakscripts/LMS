@@ -159,7 +159,6 @@ export const getAllCourses = async (req, res) => {
     }
 };
 
-
 /**
  * Create New Course
  */
@@ -416,7 +415,6 @@ export const getCourseFilterOptions = async (req, res) => {
     }
 };
 
-
 /**
  * Upload Course Thumbnail
  */
@@ -479,4 +477,3 @@ export const handleThumbnailUpload = async (req, res) => {
         });
     }
 };
-

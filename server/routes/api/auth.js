@@ -12,7 +12,11 @@ const router = express.Router();
 
 // router.post("/register", register);
 router.post("/login", authValidation.validateLogin, authController.login);
-router.post("/lms-login", authValidation.validateLmsLogin, authController.lmsLogin);
+router.post(
+    "/lms-login",
+    authValidation.validateLmsLogin,
+    authController.lmsLogin
+);
 router.post("/refresh-token", authController.refreshAccessToken);
 router.post("/logout", authController.logout);
 router.post("/logout-all", isAuthenticated, authController.logoutAll);

@@ -874,8 +874,8 @@ export const seedCourses = async () => {
                     level === "Beginner"
                         ? faker.number.int({ min: 1, max: 2 })
                         : level === "Intermediate"
-                        ? faker.number.int({ min: 2, max: 4 })
-                        : faker.number.int({ min: 4, max: 5 }),
+                          ? faker.number.int({ min: 2, max: 4 })
+                          : faker.number.int({ min: 4, max: 5 }),
                 modules: generateModules(
                     stream,
                     faker.number.int({ min: 4, max: 8 })

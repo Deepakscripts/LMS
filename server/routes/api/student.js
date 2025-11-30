@@ -2,54 +2,54 @@ import express from "express";
 import { isAuthenticated } from "../../middlewares/isAuthenticated.js";
 
 import {
-  // Dashboard
-  getDashboard,
-  
-  // Profile
-  getProfile,
-  updateProfile,
-  updateAvatar,
-  
-  // Settings
-  updatePrivacy,
-  changePassword,
-  
-  // Courses
-  getMyCourses,
-  getCourseDetails,
-  getCourseModules,
-  
-  // Quizzes
-  getQuizzesByCourse,
-  getCourseQuizzes,
-  getQuizQuestions,
-  submitQuiz,
-  
-  // Assignments
-  getAssignmentsByCourse,
-  getCourseAssignments,
-  submitAssignment,
-  
-  // Lessons
-  markLessonComplete,
-  
-  // Certificates
-  getCertificates,
-  getCourseCertificate,
-  
-  // Leaderboard
-  getLeaderboard,
-  
-  // Referral
-  getReferralInfo,
-  applyReferralCode,
-  
-  // Support
-  createSupportQuery,
-  getSupportQueries,
-  
-  // Streak
-  updateStreak,
+    // Dashboard
+    getDashboard,
+
+    // Profile
+    getProfile,
+    updateProfile,
+    updateAvatar,
+
+    // Settings
+    updatePrivacy,
+    changePassword,
+
+    // Courses
+    getMyCourses,
+    getCourseDetails,
+    getCourseModules,
+
+    // Quizzes
+    getQuizzesByCourse,
+    getCourseQuizzes,
+    getQuizQuestions,
+    submitQuiz,
+
+    // Assignments
+    getAssignmentsByCourse,
+    getCourseAssignments,
+    submitAssignment,
+
+    // Lessons
+    markLessonComplete,
+
+    // Certificates
+    getCertificates,
+    getCourseCertificate,
+
+    // Leaderboard
+    getLeaderboard,
+
+    // Referral
+    getReferralInfo,
+    applyReferralCode,
+
+    // Support
+    createSupportQuery,
+    getSupportQueries,
+
+    // Streak
+    updateStreak,
 } from "../../controllers/student/index.js";
 
 const router = express.Router();

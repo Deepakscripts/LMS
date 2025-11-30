@@ -41,9 +41,13 @@ export const isAuthenticated = async (req, res, next) => {
 
             let user;
             if (role === "admin") {
-                user = await Admin.findById(id).select("-password -refreshToken");
+                user = await Admin.findById(id).select(
+                    "-password -refreshToken"
+                );
             } else {
-                user = await Student.findById(id).select("-lmsPassword -refreshToken");
+                user = await Student.findById(id).select(
+                    "-lmsPassword -refreshToken"
+                );
             }
 
             if (!user) {

@@ -16,30 +16,34 @@ import { clearAuthCookies } from "./utils.js";
  * @returns {Promise<void>} JSON response confirming logout
  */
 export const logout = async (req, res) => {
-  try {
-    // Get refresh token from cookie or body
-    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+    try {
+        // Get refresh token from cookie or body
+        const refreshToken =
+            req.cookies?.refreshToken || req.body?.refreshToken;
 
-    if (refreshToken) {
-      // Revoke the specific refresh token
-      await RefreshToken.findOneAndUpdate({ token: refreshToken }, { isRevoked: true });
+        if (refreshToken) {
+            // Revoke the specific refresh token
+            await RefreshToken.findOneAndUpdate(
+                { token: refreshToken },
+                { isRevoked: true }
+            );
+        }
+
+        // Clear cookies
+        clearAuthCookies(res);
+
+        res.json({
+            success: true,
+            message: "Logged out successfully",
+        });
+    } catch (error) {
+        console.error("Logout error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Logout failed",
+            error: error.message,
+        });
     }
-
-    // Clear cookies
-    clearAuthCookies(res);
-
-    res.json({
-      success: true,
-      message: "Logged out successfully",
-    });
-  } catch (error) {
-    console.error("Logout error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Logout failed",
-      error: error.message,
-    });
-  }
 };
 
 /**
@@ -54,25 +58,25 @@ export const logout = async (req, res) => {
  * @returns {Promise<void>} JSON response confirming logout from all devices
  */
 export const logoutAll = async (req, res) => {
-  try {
-    const userId = req.userId;
+    try {
+        const userId = req.userId;
 
-    // Revoke all refresh tokens for this user
-    await RefreshToken.revokeAllUserTokens(userId);
+        // Revoke all refresh tokens for this user
+        await RefreshToken.revokeAllUserTokens(userId);
 
-    // Clear cookies
-    clearAuthCookies(res);
+        // Clear cookies
+        clearAuthCookies(res);
 
-    res.json({
-      success: true,
-      message: "Logged out from all devices successfully",
-    });
-  } catch (error) {
-    console.error("Logout all error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Logout failed",
-      error: error.message,
-    });
-  }
+        res.json({
+            success: true,
+            message: "Logged out from all devices successfully",
+        });
+    } catch (error) {
+        console.error("Logout all error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Logout failed",
+            error: error.message,
+        });
+    }
 };

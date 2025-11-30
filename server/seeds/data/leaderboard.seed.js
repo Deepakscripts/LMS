@@ -1,5 +1,10 @@
 import { faker } from "@faker-js/faker";
-import { Leaderboard, Student, Course, Enrollment } from "../../models/index.js";
+import {
+    Leaderboard,
+    Student,
+    Course,
+    Enrollment,
+} from "../../models/index.js";
 
 export const seedLeaderboard = async () => {
     const students = await Student.find({

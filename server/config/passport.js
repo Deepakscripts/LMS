@@ -4,7 +4,6 @@ import { Strategy as GitHubStrategy } from "passport-github2";
 import { Student } from "../models/index.js";
 
 const configurePassport = () => {
-
     passport.use(
         new GoogleStrategy(
             {
