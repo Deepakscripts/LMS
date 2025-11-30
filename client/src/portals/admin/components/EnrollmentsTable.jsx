@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useId, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Add this import
 import { SearchIcon, MoreVertical, Check, ChevronDown } from 'lucide-react';
 import {
   flexRender,
@@ -37,7 +38,6 @@ import { CalendarIcon } from 'lucide-react';
 
 import TablePagination from '@/common/components/TablePagination';
 import RevokeAccess from './RevokeAccess.jsx';
-import StudentDetail from './StudentDetail.jsx';
 import PasswordModal from './PasswordModal';
 import { cn } from '@/common/lib/utils';
 
@@ -156,6 +156,7 @@ const columns = [
 
 const enrollments = [
   {
+    id: 1,
     studentName: 'Alex Johnson',
     course: 'Advanced JavaScript',
     college: 'College of Engineering',
@@ -163,6 +164,7 @@ const enrollments = [
     email: 'alex.johnson@example.com',
   },
   {
+    id: 2,
     studentName: 'Maria Garcia',
     course: 'UI/UX Design Fundamentals',
     college: 'College of Arts & Design',
@@ -170,6 +172,7 @@ const enrollments = [
     email: 'maria.garcia@example.com',
   },
   {
+    id: 3,
     studentName: 'James Smith',
     course: 'Data Structures & Algorithms',
     college: 'College of Science',
@@ -177,6 +180,7 @@ const enrollments = [
     email: 'james.smith@example.com',
   },
   {
+    id: 4,
     studentName: 'Patricia Brown',
     course: 'Introduction to Python',
     college: 'College of Engineering',
@@ -361,6 +365,8 @@ const defaultPageSize = 5;
  * EnrollmentsTable - Displays student enrollments with filtering and actions
  */
 const EnrollmentsTable = () => {
+  const navigate = useNavigate(); // Add the hook here
+
   const [columnFilters, setColumnFilters] = useState([]);
   const [sorting, setSorting] = useState([]);
   const [pagination, setPagination] = useState({
@@ -368,32 +374,34 @@ const EnrollmentsTable = () => {
     pageSize: defaultPageSize,
   });
 
-  // State for modals
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showRevokeModal, setShowRevokeModal] = useState(false);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  // State for modals - using controlled AlertDialog pattern
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isRevokeModalOpen, setIsRevokeModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
 
   // Handler functions
   const handleRevoke = student => {
     setSelectedStudent(student);
-    setShowPasswordModal(true);
+    setIsPasswordModalOpen(true);
   };
 
   const handlePasswordSubmit = password => {
     const correctPassword = 'admin123';
 
     if (password === correctPassword) {
-      setShowPasswordModal(false);
-      setShowRevokeModal(true);
+      setIsPasswordModalOpen(false);
+      setIsRevokeModalOpen(true);
     } else {
       alert('Incorrect password!');
+      // You can replace this with a toast notification
     }
   };
 
   const handleViewDetails = student => {
-    setSelectedStudent(student);
-    setShowDetailsModal(true);
+    // Navigate to dynamic route with student data in state
+    navigate(`/admin/student/${student.id}`, {
+      state: { student },
+    });
   };
 
   const table = useReactTable({
@@ -499,27 +507,20 @@ const EnrollmentsTable = () => {
         />
       </div>
 
-      {/* Password Modal */}
-      {showPasswordModal && (
-        <PasswordModal
-          onSubmit={handlePasswordSubmit}
-          onClose={() => setShowPasswordModal(false)}
-        />
-      )}
+      {/* Password Modal - Using Radix AlertDialog */}
+      <PasswordModal
+        open={isPasswordModalOpen}
+        onOpenChange={setIsPasswordModalOpen}
+        onSubmit={handlePasswordSubmit}
+      />
 
       {/* Revoke Modal */}
-      {showRevokeModal && (
-        <RevokeAccess
-          student={selectedStudent}
-          studentName={selectedStudent?.studentName}
-          onClose={() => setShowRevokeModal(false)}
-        />
-      )}
-
-      {/* Student Detail Modal */}
-      {showDetailsModal && (
-        <StudentDetail student={selectedStudent} onClose={() => setShowDetailsModal(false)} />
-      )}
+      <RevokeAccess
+        open={isRevokeModalOpen}
+        onOpenChange={setIsRevokeModalOpen}
+        student={selectedStudent}
+        studentName={selectedStudent?.studentName}
+      />
     </>
   );
 };

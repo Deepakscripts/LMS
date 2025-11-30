@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useId, useMemo, useState } from 'react';
-import { SearchIcon, ChevronDown, X } from 'lucide-react';
+import { SearchIcon, ChevronDown, MoreVertical } from 'lucide-react';
 import {
   flexRender,
   getCoreRowModel,
@@ -29,15 +29,21 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../../../common/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/common/components/ui/dialog';
 import { Button } from '@/common/components/ui/button';
-import { Popover, PopoverTrigger, PopoverContent } from '@/common/components/ui/popover';
 import { Input } from '../../../common/components/ui/input';
 import { toast } from 'sonner';
-import { Toaster } from '@/common/components/ui/sonner';
 import TablePagination from '@/common/components/TablePagination';
 import { cn } from '@/common/lib/utils';
 
-// Filter Component - Corrected version
+// Filter Component
 function Filter({ column }) {
   const id = useId();
   const columnFilterValue = column.getFilterValue();
@@ -53,7 +59,7 @@ function Filter({ column }) {
     return Array.from(new Set(flattenedValues)).sort();
   }, [column.getFacetedUniqueValues()]);
 
-  // Dropdown variant - FIXED: Removed e.preventDefault()
+  // Dropdown variant
   if (filterVariant === 'dropdown') {
     return (
       <DropdownMenu>
@@ -124,7 +130,8 @@ function Filter({ column }) {
 const defaultPageSize = 5;
 
 const PendingVerifications = () => {
-  const [openPopoverId, setOpenPopoverId] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
   const [columnFilters, setColumnFilters] = useState([]);
   const [sorting, setSorting] = useState([]);
   const [pagination, setPagination] = useState({
@@ -133,7 +140,7 @@ const PendingVerifications = () => {
   });
 
   const handleVerifyStudent = studentData => {
-    setOpenPopoverId(null);
+    setIsDialogOpen(false);
 
     toast.success('Sending email to the student', {
       description: `Verification email is being sent to ${studentData.email}`,
@@ -154,6 +161,11 @@ const PendingVerifications = () => {
       ),
       duration: 5000,
     });
+  };
+
+  const openVerifyDialog = student => {
+    setSelectedStudent(student);
+    setIsDialogOpen(true);
   };
 
   const studentsData = useMemo(
@@ -212,7 +224,7 @@ const PendingVerifications = () => {
     [],
   );
 
-  // Define columns - wrapped in useMemo to prevent recreation
+  // Define columns
   const columns = useMemo(
     () => [
       {
@@ -256,68 +268,44 @@ const PendingVerifications = () => {
       },
       {
         id: 'actions',
-        header: '',
+        header: 'Action',
         cell: ({ row }) => {
           const student = row.original;
 
           return (
-            <Popover
-              open={openPopoverId === student.id}
-              onOpenChange={open => setOpenPopoverId(open ? student.id : null)}
-            >
-              <PopoverTrigger asChild>
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                  Verify
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0 text-zinc-400">
+                  <MoreVertical className="h-4 w-4" />
                 </Button>
-              </PopoverTrigger>
-
-              <PopoverContent className="w-80 bg-zinc-900 border-zinc-800 text-white">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <h4 className="font-bold text-lg">Confirm Verification</h4>
-                    <p className="text-sm text-zinc-400">
-                      Do you really want to verify this student?
-                    </p>
-                  </div>
-
-                  <div className="space-y-2 py-3 border-y border-zinc-800">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-zinc-500">Name:</span>
-                      <span className="font-medium">{student.name}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-zinc-500">Email:</span>
-                      <span className="font-medium">{student.email}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-zinc-500">Payment ID:</span>
-                      <span className="font-mono text-blue-400">{student.paymentId}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setOpenPopoverId(null)}
-                      className="flex-1 border-zinc-700 bg-red-300 text-zinc-900 hover:bg-red-400 hover:text-white"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={() => handleVerifyStudent(student)}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                    >
-                      Continue
-                    </Button>
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-zinc-800 border-zinc-700">
+                <DropdownMenuItem
+                  onClick={() => openVerifyDialog(student)}
+                  className="text-zinc-200 hover:bg-zinc-700 cursor-pointer"
+                >
+                  <svg
+                    className="w-4 h-4 mr-2 text-green-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  Verify Student
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           );
         },
       },
     ],
-    [openPopoverId],
+    [],
   );
 
   const table = useReactTable({
@@ -345,7 +333,6 @@ const PendingVerifications = () => {
 
   return (
     <div className="p-8 min-h-screen">
-      <Toaster position="top-center" />
       <div className="max-w-7xl mx-auto">
         {/* Filters */}
         <div className="bg-zinc-800 rounded-lg p-4 mb-6 shadow-sm border border-zinc-700">
@@ -425,6 +412,74 @@ const PendingVerifications = () => {
           />
         </div>
       </div>
+
+      {/* Verification Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="bg-zinc-900 border-zinc-800 text-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <svg
+                className="w-5 h-5 text-green-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              Confirm Verification
+            </DialogTitle>
+            <DialogDescription className="text-zinc-400">
+              Do you really want to verify this student?
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedStudent && (
+            <div className="space-y-3 py-4 border-y border-zinc-800">
+              <div className="flex justify-between text-sm">
+                <span className="text-zinc-500">Name:</span>
+                <span className="font-medium text-zinc-100">{selectedStudent.name}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-zinc-500">Email:</span>
+                <span className="font-medium text-zinc-100">{selectedStudent.email}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-zinc-500">College:</span>
+                <span className="font-medium text-zinc-100">{selectedStudent.college}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-zinc-500">Domain:</span>
+                <span className="font-medium text-zinc-100">{selectedStudent.domain}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-zinc-500">Payment ID:</span>
+                <span className="font-mono text-blue-400">{selectedStudent.paymentId}</span>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+              className="border-zinc-700 text-zinc-900 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => selectedStudent && handleVerifyStudent(selectedStudent)}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Verify & Send Email
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
