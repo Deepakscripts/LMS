@@ -58,28 +58,32 @@ const StudentDashboardPage = () => {
 
   const { stats, xp, activeCourse, pendingTasks } = dashboardData || {};
 
+  const roundToTwoDecimalPlaces = num => {
+    return Math.round(num * 100) / 100;
+  };
+
   const statsConfig = [
     {
       title: 'Enrolled Courses',
-      value: stats?.enrolledCourses || 0,
+      value: roundToTwoDecimalPlaces(stats?.enrolledCourses) || 0,
       icon: <BookOpen size={24} className="text-blue-500" />,
       color: 'bg-blue-500/10 border-blue-500/20',
     },
     {
       title: 'Hours Learned',
-      value: stats?.hoursLearned || 0,
+      value: roundToTwoDecimalPlaces(stats?.hoursLearned) || 0,
       icon: <Clock size={24} className="text-green-500" />,
       color: 'bg-green-500/10 border-green-500/20',
     },
     {
       title: 'Avg. Quiz Score',
-      value: `${stats?.avgQuizScore || 0}%`,
+      value: `${roundToTwoDecimalPlaces(stats?.avgQuizScore) || 0}%`,
       icon: <TrendingUp size={24} className="text-purple-500" />,
       color: 'bg-purple-500/10 border-purple-500/20',
     },
     {
       title: 'Certificates',
-      value: stats?.certificates || 0,
+      value: roundToTwoDecimalPlaces(stats?.certificates) || 0,
       icon: <Award size={24} className="text-yellow-500" />,
       color: 'bg-yellow-500/10 border-yellow-500/20',
     },

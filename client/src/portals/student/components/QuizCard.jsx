@@ -171,9 +171,7 @@ const QuizCard = ({ courseSlug, quizId, courseId, moduleId, onComplete }) => {
       <div className="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4">
         <div>
           <h2 className="text-2xl font-bold">{quiz.title}</h2>
-          {quiz.moduleTitle && (
-            <p className="text-sm text-zinc-500 mt-1">{quiz.moduleTitle}</p>
-          )}
+          {quiz.moduleTitle && <p className="text-sm text-zinc-500 mt-1">{quiz.moduleTitle}</p>}
         </div>
         <span className="bg-blue-900/30 text-blue-400 px-3 py-1 rounded text-sm font-bold">
           Question {attempted} of {totalQuestions}
