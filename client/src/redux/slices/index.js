@@ -1,8 +1,6 @@
-// Re-export everything from slices for backward compatibility
-// This file is kept for backward compatibility - use imports from ./slices directly
-
+// Auth Slice
 export {
-  // Auth
+  default as authReducer,
   login,
   logout,
   updateTokens,
@@ -13,7 +11,11 @@ export {
   selectAccessToken,
   selectRefreshToken,
   selectIsAuthenticated,
-  // UI
+} from './authSlice';
+
+// UI Slice
+export {
+  default as uiReducer,
   setNavigation,
   setStudentSidebarOpen,
   setAdminSidebarOpen,
@@ -27,7 +29,12 @@ export {
   selectAdminSidebarOpen,
   selectGlobalLoading,
   selectNotifications,
-  // Student
+} from './uiSlice';
+
+// Student Slice
+export {
+  default as studentReducer,
+  // Thunks
   fetchDashboard,
   fetchProfile,
   fetchMyCourses,
@@ -41,12 +48,14 @@ export {
   fetchLeaderboard,
   fetchReferralInfo,
   fetchSupportQueries,
+  // Actions
   clearStudentData,
   updateProfileLocal,
   invalidateDashboard,
   invalidateProfile,
   invalidateCourses,
   invalidateCertificates,
+  // Selectors
   selectDashboard,
   selectDashboardData,
   selectDashboardLoading,
@@ -71,4 +80,4 @@ export {
   selectReferralData,
   selectSupport,
   selectSupportQueries,
-} from './slices';
+} from './studentSlice';

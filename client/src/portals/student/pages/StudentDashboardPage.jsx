@@ -1,38 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useSelector } from 'react-redux';
 import { BookOpen, Clock, Award, TrendingUp, PlayCircle, Loader2, Zap } from 'lucide-react';
 
-import { getDashboard } from '@/services/student/studentService';
+import { useDashboard } from '../hooks';
+
+import { useNavigateWithRedux } from '@/common/hooks/useNavigateWithRedux';
+import { selectUser } from '@/redux/slices';
 
 const StudentDashboardPage = () => {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [dashboardData, setDashboardData] = useState(null);
+  const navigate = useNavigateWithRedux();
+  const user = useSelector(selectUser);
+  const { dashboardData, loading, error, refetch } = useDashboard();
 
-  // Get user name from localStorage or use default
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  // Get user name from Redux state
   const studentName = user?.name || 'Student';
-
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
-
-  const fetchDashboard = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await getDashboard();
-      if (response.success) {
-        setDashboardData(response.data);
-      }
-    } catch (err) {
-      console.error('Dashboard fetch error:', err);
-      setError(err.response?.data?.message || 'Failed to load dashboard');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -47,7 +28,7 @@ const StudentDashboardPage = () => {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
         <p className="text-red-400">{error}</p>
         <button
-          onClick={fetchDashboard}
+          onClick={refetch}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           Retry
@@ -56,7 +37,16 @@ const StudentDashboardPage = () => {
     );
   }
 
-  const { stats, xp, activeCourse, pendingTasks } = dashboardData || {};
+  // Handle case where dashboardData is not yet loaded
+  if (!dashboardData) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+      </div>
+    );
+  }
+
+  const { stats, xp = 0, activeCourse, pendingTasks = [] } = dashboardData;
 
   const roundToTwoDecimalPlaces = num => {
     return Math.round(num * 100) / 100;
@@ -105,7 +95,7 @@ const StudentDashboardPage = () => {
         <div className="hidden md:block text-right">
           <p className="text-sm text-zinc-500 uppercase tracking-wider font-bold">Current Xp</p>
           <div className="flex items-center gap-2 text-blue-400 font-bold text-xl">
-            <Zap size={16} className="mr-2 opacity-70" /> {xp.toLocaleString()}
+            <Zap size={16} className="mr-2 opacity-70" /> {(xp || 0).toLocaleString()}
           </div>
         </div>
       </div>

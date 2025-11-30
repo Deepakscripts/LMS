@@ -10,13 +10,15 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { useCourseModules, useCourseProgress } from '../hooks';
 
+import { useNavigateWithRedux } from '@/common/hooks/useNavigateWithRedux';
+
 const StudentCourseModulesPage = () => {
   const { coursename } = useParams();
-  const navigate = useNavigate();
+  const navigate = useNavigateWithRedux();
 
   // Fetch course modules and progress
   const { modules, courseTitle, loading, error, refetch } = useCourseModules(coursename);

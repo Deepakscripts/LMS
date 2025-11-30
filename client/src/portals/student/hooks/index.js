@@ -1,3 +1,7 @@
+// Dashboard Hook
+export { useDashboard } from './useDashboard';
+
+// Course Hooks
 export {
   useMyCourses,
   useCourseDetails,
@@ -14,6 +18,7 @@ export {
   useLeaderboard,
 } from './useCourses';
 
+// Profile Hooks
 export {
   useProfile,
   useUpdateProfile,
@@ -22,6 +27,11 @@ export {
   useChangePassword,
 } from './useProfile';
 
+// Certificates Hook
+export { useCertificates } from './useCertificates';
+
+// Support Hooks
 export { useSupportQueries, useCreateSupportQuery } from './useSupport';
 
+// Referral Hooks
 export { useReferralInfo, useApplyReferralCode } from './useReferral';

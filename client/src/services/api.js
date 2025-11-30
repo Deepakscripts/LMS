@@ -111,7 +111,7 @@ api.interceptors.response.use(
 
       if (!refreshToken) {
         clearAuth();
-        window.location.href = 'student/login';
+        window.location.href = '/student/login';
         return Promise.reject(error);
       }
 
@@ -133,7 +133,7 @@ api.interceptors.response.use(
         isRefreshing = false;
         onRefreshError(refreshError);
         clearAuth();
-        window.location.href = '/login';
+        window.location.href = '/student/login';
         return Promise.reject(refreshError);
       }
     }
@@ -147,7 +147,7 @@ api.interceptors.response.use(
         error.response?.data?.code === 'ACCOUNT_BLOCKED'
       ) {
         clearAuth();
-        window.location.href = '/login';
+        window.location.href = '/student/login';
       }
     }
 

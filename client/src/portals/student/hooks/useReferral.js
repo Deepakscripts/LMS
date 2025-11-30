@@ -1,42 +1,53 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 
-import { getReferralInfo, applyReferralCode } from '@/services/student/studentService';
+import { fetchReferralInfo, selectReferral } from '@/redux/slices';
+import { applyReferralCode } from '@/services/student/studentService';
+
+// Cache duration: 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000;
 
 /**
- * Hook for fetching referral information
+ * Check if cache is still valid
+ */
+const isCacheValid = lastFetched => {
+  if (!lastFetched) return false;
+  return Date.now() - lastFetched < CACHE_DURATION;
+};
+
+/**
+ * Hook for fetching referral information (Redux-powered)
  */
 export const useReferralInfo = () => {
-  const [referralInfo, setReferralInfo] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const { data: referralInfo, loading, error, lastFetched } = useSelector(selectReferral);
 
-  const fetchReferralInfo = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await getReferralInfo();
-      if (response.success) {
-        setReferralInfo(response.data);
+  const fetchReferral = useCallback(
+    (force = false) => {
+      if (force || !isCacheValid(lastFetched)) {
+        dispatch(fetchReferralInfo());
       }
-    } catch (err) {
-      console.error('Failed to fetch referral info:', err);
-      setError(err.response?.data?.message || 'Failed to load referral information');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [dispatch, lastFetched],
+  );
 
   useEffect(() => {
-    fetchReferralInfo();
-  }, [fetchReferralInfo]);
+    fetchReferral();
+  }, [fetchReferral]);
 
-  return { referralInfo, loading, error, refetch: fetchReferralInfo };
+  return {
+    referralInfo,
+    loading,
+    error,
+    refetch: () => fetchReferral(true),
+  };
 };
 
 /**
  * Hook for applying a referral code
  */
 export const useApplyReferralCode = () => {
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -45,6 +56,12 @@ export const useApplyReferralCode = () => {
       setLoading(true);
       setError(null);
       const response = await applyReferralCode(code);
+
+      // Refetch referral info after applying code
+      if (response.success) {
+        dispatch(fetchReferralInfo());
+      }
+
       return response;
     } catch (err) {
       console.error('Failed to apply referral code:', err);

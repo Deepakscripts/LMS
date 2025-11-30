@@ -1,48 +1,58 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 
+import { fetchProfile, selectProfile, updateProfileLocal, invalidateProfile } from '@/redux/slices';
 import {
-  getProfile,
   updateProfile,
   updateAvatar,
   updatePrivacy,
   changePassword,
 } from '@/services/student/studentService';
 
+// Cache duration: 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000;
+
 /**
- * Hook for fetching and managing student profile
+ * Check if cache is still valid
+ */
+const isCacheValid = lastFetched => {
+  if (!lastFetched) return false;
+  return Date.now() - lastFetched < CACHE_DURATION;
+};
+
+/**
+ * Hook for fetching and managing student profile (Redux-powered)
  */
 export const useProfile = () => {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const { data: profile, loading, error, lastFetched } = useSelector(selectProfile);
 
-  const fetchProfile = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await getProfile();
-      if (response.success) {
-        setProfile(response.data);
+  const fetchProfileData = useCallback(
+    (force = false) => {
+      if (force || !isCacheValid(lastFetched)) {
+        dispatch(fetchProfile());
       }
-    } catch (err) {
-      console.error('Failed to fetch profile:', err);
-      setError(err.response?.data?.message || 'Failed to load profile');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [dispatch, lastFetched],
+  );
 
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    fetchProfileData();
+  }, [fetchProfileData]);
 
-  return { profile, loading, error, refetch: fetchProfile };
+  return {
+    profile,
+    loading,
+    error,
+    refetch: () => fetchProfileData(true),
+  };
 };
 
 /**
  * Hook for updating student profile
  */
 export const useUpdateProfile = () => {
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -51,6 +61,12 @@ export const useUpdateProfile = () => {
       setLoading(true);
       setError(null);
       const response = await updateProfile(profileData);
+
+      // Update local Redux state on success
+      if (response.success) {
+        dispatch(updateProfileLocal(profileData));
+      }
+
       return response;
     } catch (err) {
       console.error('Failed to update profile:', err);
@@ -68,6 +84,7 @@ export const useUpdateProfile = () => {
  * Hook for updating avatar
  */
 export const useUpdateAvatar = () => {
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -76,6 +93,12 @@ export const useUpdateAvatar = () => {
       setLoading(true);
       setError(null);
       const response = await updateAvatar(avatarUrl);
+
+      // Update local Redux state on success
+      if (response.success) {
+        dispatch(updateProfileLocal({ avatar: avatarUrl }));
+      }
+
       return response;
     } catch (err) {
       console.error('Failed to update avatar:', err);
@@ -93,6 +116,7 @@ export const useUpdateAvatar = () => {
  * Hook for updating privacy settings
  */
 export const useUpdatePrivacy = () => {
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -101,6 +125,12 @@ export const useUpdatePrivacy = () => {
       setLoading(true);
       setError(null);
       const response = await updatePrivacy(isProfileLocked);
+
+      // Update local Redux state on success
+      if (response.success) {
+        dispatch(updateProfileLocal({ isProfileLocked }));
+      }
+
       return response;
     } catch (err) {
       console.error('Failed to update privacy:', err);

@@ -4,9 +4,11 @@ import { useSelector } from 'react-redux';
 import StudentSidebar from '../components/StudentSidebar';
 import StudentTopBar from '../components/StudentTopBar';
 
+import { selectStudentSidebarOpen, selectCurrentNavigation } from '@/redux/slices';
+
 const StudentLayout = () => {
-  const studentSidebarOpen = useSelector(state => state.global.studentSidebarOpen);
-  const currentNavigation = useSelector(state => state.global.currentNavigation);
+  const studentSidebarOpen = useSelector(selectStudentSidebarOpen);
+  const currentNavigation = useSelector(selectCurrentNavigation);
 
   return (
     <div className="flex h-screen overflow-hidden">

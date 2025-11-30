@@ -1,122 +1,134 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 
 import {
-  getMyCourses,
-  getCourseDetails,
-  getCourseModules,
+  fetchMyCourses,
+  fetchCourseDetails,
+  fetchCourseModules,
+  fetchQuizzesByCourse,
+  fetchCourseQuizzes,
+  fetchAssignmentsByCourse,
+  fetchCourseAssignments,
+  fetchLeaderboard,
+  selectCourses,
+  selectCourseDetails,
+  selectCourseModules,
+  selectQuizzes,
+  selectCourseQuizzes,
+  selectAssignments,
+  selectCourseAssignments,
+  selectLeaderboard,
+} from '@/redux/slices';
+import {
   markModuleAccessed,
   getCourseProgress,
   getQuizQuestions,
   submitQuiz,
-  getQuizzesByCourse,
-  getCourseQuizzes,
-  getAssignmentsByCourse,
-  getCourseAssignments,
   submitAssignment,
-  getLeaderboard,
 } from '@/services/student/studentService';
 
+// Cache duration: 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000;
+
 /**
- * Hook for fetching enrolled courses
+ * Check if cache is still valid
+ */
+const isCacheValid = lastFetched => {
+  if (!lastFetched) return false;
+  return Date.now() - lastFetched < CACHE_DURATION;
+};
+
+/**
+ * Hook for fetching enrolled courses (Redux-powered)
  */
 export const useMyCourses = () => {
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const { list: courses, loading, error, lastFetched } = useSelector(selectCourses);
 
-  const fetchCourses = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await getMyCourses();
-      if (response.success) {
-        setCourses(response.data);
+  const fetchCourses = useCallback(
+    (force = false) => {
+      if (force || !isCacheValid(lastFetched)) {
+        dispatch(fetchMyCourses());
       }
-    } catch (err) {
-      console.error('Failed to fetch courses:', err);
-      setError(err.response?.data?.message || 'Failed to load courses');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [dispatch, lastFetched],
+  );
 
   useEffect(() => {
     fetchCourses();
   }, [fetchCourses]);
 
-  return { courses, loading, error, refetch: fetchCourses };
+  return {
+    courses,
+    loading,
+    error,
+    refetch: () => fetchCourses(true),
+  };
 };
 
 /**
- * Hook for fetching course details for learning
+ * Hook for fetching course details (Redux-powered with caching)
  */
 export const useCourseDetails = slug => {
-  const [course, setCourse] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const courseData = useSelector(selectCourseDetails(slug));
 
-  const fetchCourseDetails = useCallback(async () => {
-    if (!slug) return;
+  const { data: course, loading, error, lastFetched } = courseData || {};
 
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await getCourseDetails(slug);
-      if (response.success) {
-        setCourse(response.data);
+  const fetchDetails = useCallback(
+    (force = false) => {
+      if (slug && (force || !isCacheValid(lastFetched))) {
+        dispatch(fetchCourseDetails(slug));
       }
-    } catch (err) {
-      console.error('Failed to fetch course details:', err);
-      setError(err.response?.data?.message || 'Failed to load course');
-    } finally {
-      setLoading(false);
-    }
-  }, [slug]);
+    },
+    [dispatch, slug, lastFetched],
+  );
 
   useEffect(() => {
-    fetchCourseDetails();
-  }, [fetchCourseDetails]);
+    fetchDetails();
+  }, [fetchDetails]);
 
-  return { course, loading, error, refetch: fetchCourseDetails };
+  return {
+    course,
+    loading: loading ?? true,
+    error,
+    refetch: () => fetchDetails(true),
+  };
 };
 
 /**
- * Hook for fetching course modules
+ * Hook for fetching course modules (Redux-powered with caching)
  */
 export const useCourseModules = slug => {
-  const [modules, setModules] = useState([]);
-  const [courseTitle, setCourseTitle] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const moduleData = useSelector(selectCourseModules(slug));
 
-  const fetchModules = useCallback(async () => {
-    if (!slug) return;
+  const { modules, courseTitle, loading, error, lastFetched } = moduleData || {};
 
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await getCourseModules(slug);
-      if (response.success) {
-        setModules(response.data.modules);
-        setCourseTitle(response.data.courseTitle);
+  const fetchModules = useCallback(
+    (force = false) => {
+      if (slug && (force || !isCacheValid(lastFetched))) {
+        dispatch(fetchCourseModules(slug));
       }
-    } catch (err) {
-      console.error('Failed to fetch modules:', err);
-      setError(err.response?.data?.message || 'Failed to load modules');
-    } finally {
-      setLoading(false);
-    }
-  }, [slug]);
+    },
+    [dispatch, slug, lastFetched],
+  );
 
   useEffect(() => {
     fetchModules();
   }, [fetchModules]);
 
-  return { modules, courseTitle, loading, error, refetch: fetchModules };
+  return {
+    modules: modules || [],
+    courseTitle: courseTitle || '',
+    loading: loading ?? true,
+    error,
+    refetch: () => fetchModules(true),
+  };
 };
 
 /**
- * Hook for marking module as accessed
+ * Hook for marking module as accessed (action-based, no Redux state needed)
  */
 export const useMarkModuleAccessed = () => {
   const [loading, setLoading] = useState(false);
@@ -236,77 +248,67 @@ export const useSubmitQuiz = () => {
 };
 
 /**
- * Hook for fetching course quizzes
+ * Hook for fetching course quizzes (Redux-powered)
  */
 export const useCourseQuizzes = slug => {
-  const [quizzes, setQuizzes] = useState([]);
-  const [courseId, setCourseId] = useState(null);
-  const [courseTitle, setCourseTitle] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const quizData = useSelector(selectCourseQuizzes(slug));
 
-  const fetchQuizzes = useCallback(async () => {
-    if (!slug) return;
+  const { quizzes, courseId, courseTitle, loading, error, lastFetched } = quizData || {};
 
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await getCourseQuizzes(slug);
-      if (response.success) {
-        setQuizzes(response.data.quizzes);
-        setCourseId(response.data.courseId);
-        setCourseTitle(response.data.courseTitle);
+  const fetchQuizzes = useCallback(
+    (force = false) => {
+      if (slug && (force || !isCacheValid(lastFetched))) {
+        dispatch(fetchCourseQuizzes(slug));
       }
-    } catch (err) {
-      console.error('Failed to fetch quizzes:', err);
-      setError(err.response?.data?.message || 'Failed to load quizzes');
-    } finally {
-      setLoading(false);
-    }
-  }, [slug]);
+    },
+    [dispatch, slug, lastFetched],
+  );
 
   useEffect(() => {
     fetchQuizzes();
   }, [fetchQuizzes]);
 
-  return { quizzes, courseId, courseTitle, loading, error, refetch: fetchQuizzes };
+  return {
+    quizzes: quizzes || [],
+    courseId,
+    courseTitle: courseTitle || '',
+    loading: loading ?? true,
+    error,
+    refetch: () => fetchQuizzes(true),
+  };
 };
 
 /**
- * Hook for fetching course assignments
+ * Hook for fetching course assignments (Redux-powered)
  */
 export const useCourseAssignments = slug => {
-  const [assignments, setAssignments] = useState([]);
-  const [courseId, setCourseId] = useState(null);
-  const [courseTitle, setCourseTitle] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const assignmentData = useSelector(selectCourseAssignments(slug));
 
-  const fetchAssignments = useCallback(async () => {
-    if (!slug) return;
+  const { assignments, courseId, courseTitle, loading, error, lastFetched } = assignmentData || {};
 
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await getCourseAssignments(slug);
-      if (response.success) {
-        setAssignments(response.data.assignments);
-        setCourseId(response.data.courseId);
-        setCourseTitle(response.data.courseTitle);
+  const fetchAssignments = useCallback(
+    (force = false) => {
+      if (slug && (force || !isCacheValid(lastFetched))) {
+        dispatch(fetchCourseAssignments(slug));
       }
-    } catch (err) {
-      console.error('Failed to fetch assignments:', err);
-      setError(err.response?.data?.message || 'Failed to load assignments');
-    } finally {
-      setLoading(false);
-    }
-  }, [slug]);
+    },
+    [dispatch, slug, lastFetched],
+  );
 
   useEffect(() => {
     fetchAssignments();
   }, [fetchAssignments]);
 
-  return { assignments, courseId, courseTitle, loading, error, refetch: fetchAssignments };
+  return {
+    assignments: assignments || [],
+    courseId,
+    courseTitle: courseTitle || '',
+    loading: loading ?? true,
+    error,
+    refetch: () => fetchAssignments(true),
+  };
 };
 
 /**
@@ -335,107 +337,89 @@ export const useSubmitAssignment = () => {
 };
 
 /**
- * Hook for fetching all courses with quiz progress
+ * Hook for fetching all courses with quiz progress (Redux-powered)
  */
 export const useQuizzesByCourse = () => {
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const { byCourse: courses, loading, error, lastFetched } = useSelector(selectQuizzes);
 
-  const fetchCourses = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await getQuizzesByCourse();
-      if (response.success) {
-        setCourses(response.data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch quizzes by course:', err);
-      setError(err.response?.data?.message || 'Failed to load quizzes');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCourses();
-  }, [fetchCourses]);
-
-  return { courses, loading, error, refetch: fetchCourses };
-};
-
-/**
- * Hook for fetching all courses with assignment progress
- */
-export const useAssignmentsByCourse = () => {
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const fetchCourses = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await getAssignmentsByCourse();
-      if (response.success) {
-        setCourses(response.data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch assignments by course:', err);
-      setError(err.response?.data?.message || 'Failed to load assignments');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCourses();
-  }, [fetchCourses]);
-
-  return { courses, loading, error, refetch: fetchCourses };
-};
-
-/**
- * Hook for fetching leaderboard data
- */
-export const useLeaderboard = (type = 'global', courseId = null) => {
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [userRank, setUserRank] = useState(null);
-  const [userEntry, setUserEntry] = useState(null);
-  const [pagination, setPagination] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const fetchLeaderboard = useCallback(
-    async (page = 1) => {
-      try {
-        setLoading(true);
-        setError(null);
-        const params = { type, limit: 50, page };
-        if (type === 'course' && courseId) {
-          params.courseId = courseId;
-        }
-        const response = await getLeaderboard(params);
-        if (response.success) {
-          setLeaderboard(response.data.leaderboard);
-          setUserRank(response.data.userRank);
-          setUserEntry(response.data.userEntry);
-          setPagination(response.data.pagination);
-        }
-      } catch (err) {
-        console.error('Failed to fetch leaderboard:', err);
-        setError(err.response?.data?.message || 'Failed to load leaderboard');
-      } finally {
-        setLoading(false);
+  const fetchCourses = useCallback(
+    (force = false) => {
+      if (force || !isCacheValid(lastFetched)) {
+        dispatch(fetchQuizzesByCourse());
       }
     },
-    [type, courseId],
+    [dispatch, lastFetched],
   );
 
   useEffect(() => {
-    fetchLeaderboard();
-  }, [fetchLeaderboard]);
+    fetchCourses();
+  }, [fetchCourses]);
+
+  return {
+    courses,
+    loading,
+    error,
+    refetch: () => fetchCourses(true),
+  };
+};
+
+/**
+ * Hook for fetching all courses with assignment progress (Redux-powered)
+ */
+export const useAssignmentsByCourse = () => {
+  const dispatch = useDispatch();
+  const { byCourse: courses, loading, error, lastFetched } = useSelector(selectAssignments);
+
+  const fetchCourses = useCallback(
+    (force = false) => {
+      if (force || !isCacheValid(lastFetched)) {
+        dispatch(fetchAssignmentsByCourse());
+      }
+    },
+    [dispatch, lastFetched],
+  );
+
+  useEffect(() => {
+    fetchCourses();
+  }, [fetchCourses]);
+
+  return {
+    courses,
+    loading,
+    error,
+    refetch: () => fetchCourses(true),
+  };
+};
+
+/**
+ * Hook for fetching leaderboard data (Redux-powered)
+ */
+export const useLeaderboard = (type = 'global', courseId = null) => {
+  const dispatch = useDispatch();
+  const {
+    data: leaderboard,
+    userRank,
+    userEntry,
+    pagination,
+    loading,
+    error,
+  } = useSelector(selectLeaderboard);
+
+  const fetchLeaderboardData = useCallback(
+    (page = 1) => {
+      const params = { type, limit: 50, page };
+      if (type === 'course' && courseId) {
+        params.courseId = courseId;
+      }
+      dispatch(fetchLeaderboard(params));
+    },
+    [dispatch, type, courseId],
+  );
+
+  useEffect(() => {
+    fetchLeaderboardData();
+  }, [fetchLeaderboardData]);
 
   return {
     leaderboard,
@@ -444,6 +428,6 @@ export const useLeaderboard = (type = 'global', courseId = null) => {
     pagination,
     loading,
     error,
-    refetch: fetchLeaderboard,
+    refetch: fetchLeaderboardData,
   };
 };

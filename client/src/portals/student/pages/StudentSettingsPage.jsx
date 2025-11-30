@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Shield, Lock, LogOut, User, Loader2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 
 import { useProfile, useUpdatePrivacy, useChangePassword } from '../hooks';
 
-import { logout } from '@/redux/slice';
+import { useNavigateWithRedux } from '@/common/hooks/useNavigateWithRedux';
+import { logout, clearStudentData } from '@/redux/slices';
 
 // Reusing Sidebar Layout
 
 const StudentSettingsPage = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigateWithRedux();
   const dispatch = useDispatch();
   const { profile, loading: profileLoading, refetch } = useProfile();
   const { update: updatePrivacyApi, loading: privacyLoading } = useUpdatePrivacy();
@@ -66,12 +66,13 @@ const StudentSettingsPage = () => {
   };
 
   const handleLogout = (allDevices = false) => {
-    // Clear auth state
+    // Clear auth state and student data
     dispatch(logout());
+    dispatch(clearStudentData());
     if (allDevices) {
       alert('Logged out from all devices.');
     }
-    navigate('student/login');
+    navigate('/student/login');
   };
 
   if (profileLoading) {

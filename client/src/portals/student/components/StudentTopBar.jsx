@@ -2,12 +2,16 @@ import React from 'react';
 import { Bell, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { setStudentSidebarOpen } from '@/redux/slice';
+import {
+  setStudentSidebarOpen,
+  selectStudentSidebarOpen,
+  selectCurrentNavigation,
+} from '@/redux/slices';
 
 const StudentTopBar = () => {
   const dispatch = useDispatch();
-  const studentSidebarOpen = useSelector(state => state.global.studentSidebarOpen);
-  const currentNavigation = useSelector(state => state.global.currentNavigation);
+  const studentSidebarOpen = useSelector(selectStudentSidebarOpen);
+  const currentNavigation = useSelector(selectCurrentNavigation);
   const toggleSidebar = () => {
     dispatch(setStudentSidebarOpen(!studentSidebarOpen));
   };
