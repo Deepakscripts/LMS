@@ -164,11 +164,10 @@ const BrowseStreams = () => {
               <button
                 key={category}
                 onClick={() => setActiveFilter(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                  activeFilter === category
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${activeFilter === category
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
                     : 'bg-zinc-800 text-gray-400 hover:bg-zinc-700 hover:text-white'
-                }`}
+                  }`}
               >
                 {category}
               </button>
@@ -183,7 +182,8 @@ const BrowseStreams = () => {
               key={stream.id}
               onClick={() => handleClick(stream)}
               className="cursor-pointer bg-zinc-900 border border-zinc-800 rounded-2xl p-6 
-                 hover:border-blue-500/50 transition-all duration-300 hover:-translate-y-1 group"
+         hover:border-blue-500/50 transition-all duration-300 hover:-translate-y-1 group
+         flex flex-col h-full"
             >
               <div className="flex justify-between items-start mb-6">
                 <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center border border-zinc-800 group-hover:border-blue-500/30">
@@ -198,28 +198,32 @@ const BrowseStreams = () => {
                 {stream.title}
               </h3>
 
-              <p className="text-gray-400 text-sm mb-6 line-clamp-2">{stream.desc}</p>
+              <p className="text-gray-400 text-sm mb-6 line-clamp-2 flex-grow">
+                {stream.desc}
+              </p>
 
-              <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
-                <div>
-                  <p className="text-xs text-gray-500">Level</p>
-                  <p className="font-medium">{stream.level}</p>
+              <div className="mt-auto">
+                <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
+                  <div>
+                    <p className="text-xs text-gray-500">Level</p>
+                    <p className="font-medium">{stream.level}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500">Price</p>
+                    <p className="font-bold text-lg">{stream.price}</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs text-gray-500">Price</p>
-                  <p className="font-bold text-lg">{stream.price}</p>
-                </div>
+
+                <button
+                  onClick={e => {
+                    e.stopPropagation(); // prevents double trigger
+                    handleClick(stream);
+                  }}
+                  className="w-full mt-6 bg-white text-black font-bold py-3 rounded-xl hover:bg-blue-50 transition-colors"
+                >
+                  View Details
+                </button>
               </div>
-
-              <button
-                onClick={e => {
-                  e.stopPropagation(); // prevents double trigger
-                  handleClick(stream);
-                }}
-                className="w-full mt-6 bg-white text-black font-bold py-3 rounded-xl hover:bg-blue-50 transition-colors"
-              >
-                View Details
-              </button>
             </div>
           ))}
         </div>

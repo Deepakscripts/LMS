@@ -67,6 +67,13 @@ function Navbar() {
                 >
                   How it works
                 </a>
+                <a
+                  href="/browse"
+                  onClick={e => handleInternalNav(e, '/browse')}
+                  className="hover:text-blue-400 transition-colors px-3 py-2 text-white rounded-md text-sm font-medium"
+                >
+                  Browse Streams
+                </a>
 
                 <button
                   onClick={() => {

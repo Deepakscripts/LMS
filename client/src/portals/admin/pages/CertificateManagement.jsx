@@ -378,14 +378,14 @@ const CertificateManagement = () => {
           />
         </div>
       </div>
-       <div className=" overflow-auto">
+       {/* <div className=" overflow-auto">
           <CustomCertificate
             studentName={"Deepak Agrawal"}
             course={"Web Development"}
             timeperiod={"3 Months"}
             conductedFrom={"1-october to 3 october"}
           />
-        </div>
+        </div> */}
       
     </div>
   );
