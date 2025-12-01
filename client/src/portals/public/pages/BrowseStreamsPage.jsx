@@ -227,7 +227,6 @@ const BrowseStreams = () => {
             </div>
           ))}
         </div>
-
         {filteredStreams.length === 0 && (
           <div className="text-center py-20 text-gray-500">
             <Filter size={48} className="mx-auto mb-4 opacity-20" />
