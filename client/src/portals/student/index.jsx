@@ -14,7 +14,6 @@ import StudentReferandEarnPage from './pages/StudentReferandEarnPage';
 import StudentSupportPage from './pages/StudentSupportPage';
 import StudentSettingsPage from './pages/StudentSettingsPage';
 import StudentProfilePage from './pages/StudentProfilePage';
-import StudentCourseModulesPage from './pages/StudentCourseModulesPage';
 import StudentCourseCertificatesPage from './pages/StudentCourseCertificatesPage';
 import StudentLoginPage from './pages/StudentLoginPage';
 import StudentLandingPage from './pages/StudentLandingPage';
@@ -28,7 +27,6 @@ const StudentPortal = () => {
         <Route path="/dashboard" element={<StudentDashboardPage />} />
         <Route path="/my-courses" element={<StudentMyCoursesPage />} />
         <Route path="/my-courses/:coursename" element={<StudentLearningPage />} />
-        <Route path="/modules/:coursename" element={<StudentCourseModulesPage />} />
         <Route path="/quizzes" element={<StudentQuizzesPage />} />
         <Route path="/quizzes/:coursename" element={<StudentCourseQuizzesPage />} />
         <Route path="/assignments" element={<StudentAssignmentsPage />} />
