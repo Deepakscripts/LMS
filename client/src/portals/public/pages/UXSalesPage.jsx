@@ -409,4 +409,3 @@ const UX = () => {
 };
 
 export default UX;
-

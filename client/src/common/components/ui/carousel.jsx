@@ -188,4 +188,3 @@ function CarouselNext({ className, variant = 'outline', size = 'icon', ...props 
 }
 
 export { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext };
-

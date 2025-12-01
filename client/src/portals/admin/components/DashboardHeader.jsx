@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { ChevronDown, CalendarIcon } from 'lucide-react';
+
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -9,7 +11,6 @@ import { Button } from '../../../common/components/ui/button';
 import { Input } from '../../../common/components/ui/input';
 import { Popover, PopoverTrigger, PopoverContent } from '../../../common/components/ui/popover';
 import { Calendar } from '../../../common/components/ui/calendar';
-import { ChevronDown, CalendarIcon } from 'lucide-react';
 
 const collegeOptions = ['All Colleges', 'Stanford University', 'MIT', 'Harvard'];
 const statusOptions = ['All Status', 'Graded', 'Submitted', 'In Progress'];
@@ -243,4 +244,3 @@ const DashboardHeader = () => {
 };
 
 export default DashboardHeader;
-

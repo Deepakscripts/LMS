@@ -142,4 +142,3 @@ const LoginPopup = ({ isOpen, onClose, onSubmit }) => {
 };
 
 export default LoginPopup;
-

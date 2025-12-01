@@ -434,4 +434,3 @@ const DataBase = () => {
 };
 
 export default DataBase;
-

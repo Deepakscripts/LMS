@@ -47,4 +47,3 @@ function Button({ className, variant, size, asChild = false, ...props }) {
 }
 
 export { Button, buttonVariants };
-

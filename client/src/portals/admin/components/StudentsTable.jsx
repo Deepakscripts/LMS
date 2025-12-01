@@ -13,6 +13,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+import { toast } from 'sonner';
 
 import {
   Table,
@@ -29,6 +30,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../../../common/components/ui/dropdown-menu';
+import { Input } from '../../../common/components/ui/input';
+import { Label } from '../../../common/components/ui/label';
+
 import {
   Dialog,
   DialogContent,
@@ -38,9 +42,6 @@ import {
   DialogFooter,
 } from '@/common/components/ui/dialog';
 import { Button } from '@/common/components/ui/button';
-import { Input } from '../../../common/components/ui/input';
-import { Label } from '../../../common/components/ui/label';
-import { toast } from 'sonner';
 import TablePagination from '@/common/components/TablePagination';
 import { cn } from '@/common/lib/utils';
 
@@ -688,4 +689,3 @@ const StudentsTable = ({ data = [] }) => {
 };
 
 export default StudentsTable;
-

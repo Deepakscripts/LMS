@@ -1,4 +1,5 @@
 import React from 'react';
+
 import DashboardHeader from '../components/DashboardHeader';
 import StatsCardsSection from '../components/StatsCardsSection';
 import EnrollmentsTable from '../components/EnrollmentsTable';

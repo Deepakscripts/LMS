@@ -21,4 +21,3 @@ const StatsCardsSection = () => {
 };
 
 export default StatsCardsSection;
-

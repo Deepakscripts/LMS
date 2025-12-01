@@ -1,7 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
+
 import { Input } from '../../../common/components/ui/input';
+import { Button } from '../../../common/components/ui/button';
+
 import {
   AlertDialog,
   AlertDialogContent,
@@ -11,7 +14,6 @@ import {
   AlertDialogDescription,
   AlertDialogCancel,
 } from '@/common/components/ui/alert-dialog';
-import { Button } from '../../../common/components/ui/button';
 
 /**
  * PasswordModal - Admin verification dialog using Radix UI AlertDialog
@@ -81,4 +83,3 @@ const PasswordModal = ({ open, onOpenChange, onSubmit }) => {
 };
 
 export default PasswordModal;
-

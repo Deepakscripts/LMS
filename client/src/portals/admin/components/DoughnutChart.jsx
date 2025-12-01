@@ -209,7 +209,7 @@ export default function DoughnutChart({
     <div
       style={{
         width: '100%',
-        background: '#18181b', 
+        background: '#18181b',
       }}
     >
       <div
