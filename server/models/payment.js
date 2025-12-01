@@ -5,7 +5,7 @@ const paymentSchema = new mongoose.Schema(
         // Relations
         student: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            ref: "Student",
             required: true,
         },
         course: {

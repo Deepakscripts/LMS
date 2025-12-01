@@ -87,4 +87,3 @@ const RevokeAccess = ({ open, onOpenChange, student, onConfirm }) => {
 };
 
 export default RevokeAccess;
-

@@ -12,8 +12,13 @@ const refreshTokenSchema = new mongoose.Schema(
     {
         user: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
             required: true,
+            refPath: "userModel", // Dynamic reference based on userModel field
+        },
+        userModel: {
+            type: String,
+            required: true,
+            enum: ["Student", "Admin"],
         },
         token: {
             type: String,
@@ -71,6 +76,7 @@ refreshTokenSchema.statics.saveRefreshToken = async function (
     userId,
     token,
     req,
+    userModel,
     family = null
 ) {
     const expiresAt = new Date();
@@ -82,6 +88,7 @@ refreshTokenSchema.statics.saveRefreshToken = async function (
     // Create the refresh token
     await this.create({
         user: userId,
+        userModel,
         token,
         expiresAt,
         family: tokenFamily,

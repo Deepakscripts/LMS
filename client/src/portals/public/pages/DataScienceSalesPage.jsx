@@ -491,4 +491,3 @@ const DataScience = () => {
 };
 
 export default DataScience;
-

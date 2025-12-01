@@ -13,6 +13,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+import { toast } from 'sonner';
 
 import { Badge } from '../../../common/components/ui/badge';
 import {
@@ -29,6 +30,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../../../common/components/ui/dropdown-menu';
+import { Input } from '../../../common/components/ui/input';
+
 import {
   Dialog,
   DialogContent,
@@ -38,8 +41,6 @@ import {
   DialogFooter,
 } from '@/common/components/ui/dialog';
 import { Button } from '@/common/components/ui/button';
-import { Input } from '../../../common/components/ui/input';
-import { toast } from 'sonner';
 import TablePagination from '@/common/components/TablePagination';
 import { cn } from '@/common/lib/utils';
 
@@ -66,7 +67,7 @@ function Filter({ column }) {
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            className="flex items-center gap-2 bg-zinc-800 border-zinc-700 text-zinc-200 hover:bg-zinc-700 min-w-[160px]"
+            className="flex items-center gap-2 bg-zinc-800 border-zinc-700 text-zinc-200 hover:bg-zinc-700 min-w-40"
           >
             <span
               className={cn(
@@ -79,7 +80,7 @@ function Filter({ column }) {
             <ChevronDown className="h-4 w-4 shrink-0" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="bg-zinc-800 border-zinc-700 min-w-[160px]" align="start">
+        <DropdownMenuContent className="bg-zinc-800 border-zinc-700 min-w-40" align="start">
           {sortedUniqueValues.map(value => (
             <DropdownMenuItem
               key={String(value)}
@@ -111,7 +112,7 @@ function Filter({ column }) {
 
   // Text search variant
   return (
-    <div className="relative min-w-[160px]">
+    <div className="relative min-w-40">
       <Input
         id={`${id}-input`}
         className="peer pl-9 bg-zinc-800 text-zinc-200 border-zinc-700 placeholder:text-zinc-400"
@@ -485,4 +486,3 @@ const PendingVerifications = () => {
 };
 
 export default PendingVerifications;
-

@@ -184,4 +184,3 @@ export default function ColumnChart({ data, height = 400, onDateChange }) {
     </div>
   );
 }
-

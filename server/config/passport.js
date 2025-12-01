@@ -1,12 +1,9 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as GitHubStrategy } from "passport-github2";
-// import User from "../models/User.js";
-import { User } from "../models/index.js";
+import { Student } from "../models/index.js";
 
 const configurePassport = () => {
-    console.log(process.env.GOOGLE_CLIENT_ID);
-
     passport.use(
         new GoogleStrategy(
             {
@@ -18,24 +15,24 @@ const configurePassport = () => {
                 console.log(profile);
 
                 try {
-                    let user = await User.findOneAndUpdate(
+                    let student = await Student.findOneAndUpdate(
                         { googleId: profile.id },
                         { isLoggedIn: true },
                         { new: true }
                     );
 
-                    if (!user) {
-                        user = await User.create({
+                    if (!student) {
+                        student = await Student.create({
                             googleId: profile.id,
                             name: profile.displayName,
                             email: profile.emails?.[0]?.value,
                             avatar: profile.photos?.[0]?.value,
                             isLoggedIn: true,
-                            isVerified: true,
+                            accountStatus: "verified",
                         });
                     }
 
-                    return cb(null, user);
+                    return cb(null, student);
                 } catch (error) {
                     return cb(error, null);
                 }
@@ -52,24 +49,24 @@ const configurePassport = () => {
             },
             async (accessToken, refreshToken, profile, cb) => {
                 try {
-                    let user = await User.findOneAndUpdate(
+                    let student = await Student.findOneAndUpdate(
                         { githubId: profile.id },
                         { isLoggedIn: true },
                         { new: true }
                     );
 
-                    if (!user) {
-                        user = await User.create({
+                    if (!student) {
+                        student = await Student.create({
                             githubId: profile.id,
                             name: profile.displayName,
                             email: profile.emails?.[0]?.value,
                             avatar: profile.photos?.[0]?.value,
                             isLoggedIn: true,
-                            isVerified: true,
+                            accountStatus: "verified",
                         });
                     }
 
-                    return cb(null, user);
+                    return cb(null, student);
                 } catch (error) {
                     return cb(error, null);
                 }

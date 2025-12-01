@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-import { User } from "../models/index.js";
-import errorHandler from "../utils/errorHandler.js";
+import { Student, Admin } from "../models/index.js";
+import { ERROR_CODES } from "./globalErrorHandler.js";
 
 export const isAuthenticated = async (req, res, next) => {
     try {
@@ -9,7 +9,11 @@ export const isAuthenticated = async (req, res, next) => {
             req.header("Authorization")?.replace("Bearer ", "");
 
         if (!token) {
-            throw new errorHandler(401, "Unauthorized request");
+            return res.status(401).json({
+                success: false,
+                message: "Access token is required",
+                code: ERROR_CODES.UNAUTHORIZED,
+            });
         }
 
         const secret = process.env.ACCESS_TOKEN_SECRET;
@@ -17,40 +21,60 @@ export const isAuthenticated = async (req, res, next) => {
         jwt.verify(token, secret, async (err, decoded) => {
             if (err) {
                 if (err.name === "TokenExpiredError") {
-                    throw new errorHandler(401, "Access token has expired");
+                    return res.status(401).json({
+                        success: false,
+                        message: "Access token has expired",
+                        code: ERROR_CODES.TOKEN_EXPIRED,
+                    });
                 }
                 if (err.name === "JsonWebTokenError") {
-                    throw new errorHandler(401, "Invalid access token");
+                    return res.status(401).json({
+                        success: false,
+                        message: "Invalid access token",
+                        code: ERROR_CODES.INVALID_TOKEN,
+                    });
                 }
-                throw new errorHandler(401, "Token verification failed");
-            }
-
-            const { id } = decoded;
-
-            const user = await User.findById(id).select(
-                "-password -refreshToken"
-            );
-            if (!user) {
-                return res.status(404).json({
+                return res.status(401).json({
                     success: false,
-                    message: "User not found",
-                    code: "USER_NOT_FOUND",
+                    message: "Token verification failed",
+                    code: ERROR_CODES.TOKEN_VERIFICATION_FAILED,
                 });
             }
 
-            // Check if user is blocked
+            const { id, role } = decoded;
+
+            let user;
+            if (role === "admin") {
+                user = await Admin.findById(id).select(
+                    "-password -refreshToken"
+                );
+            } else {
+                user = await Student.findById(id).select(
+                    "-lmsPassword -refreshToken"
+                );
+            }
+
+            if (!user) {
+                return res.status(401).json({
+                    success: false,
+                    message: "User not found",
+                    code: ERROR_CODES.USER_NOT_FOUND,
+                });
+            }
+
+            // Check if user is blocked (for students)
             if (user.accountStatus === "blocked") {
                 return res.status(403).json({
                     success: false,
                     message:
                         "Your account has been blocked. Please contact support.",
-                    code: "ACCOUNT_BLOCKED",
+                    code: ERROR_CODES.ACCOUNT_BLOCKED,
                 });
             }
 
             req.user = user;
             req.userId = user._id;
-            req.userRole = user.role;
+            req.userRole = role || "student";
             next();
         });
     } catch (error) {
@@ -58,7 +82,7 @@ export const isAuthenticated = async (req, res, next) => {
         return res.status(500).json({
             success: false,
             message: "Authentication failed",
-            error: error.message,
+            code: ERROR_CODES.INTERNAL_ERROR,
         });
     }
 };
@@ -73,7 +97,7 @@ export const authorizeRoles = (...roles) => {
             return res.status(403).json({
                 success: false,
                 message: `Access denied. Required role: ${roles.join(" or ")}`,
-                code: "INSUFFICIENT_PERMISSIONS",
+                code: ERROR_CODES.INSUFFICIENT_PERMISSIONS,
             });
         }
         next();
@@ -96,10 +120,7 @@ export const optionalAuth = async (req, res, next) => {
         }
 
         const token = authHeader.split(" ")[1];
-        const secret =
-            process.env.JWT_ACCESS_SECRET ||
-            process.env.OAUTH_SECRET ||
-            process.env.SECRET_KEY;
+        const secret = process.env.ACCESS_TOKEN_SECRET;
 
         jwt.verify(token, secret, async (err, decoded) => {
             if (err) {
@@ -109,11 +130,18 @@ export const optionalAuth = async (req, res, next) => {
                 return next();
             }
 
-            const user = await User.findById(decoded.id);
+            const { role } = decoded;
+            let user;
+            if (role === "admin") {
+                user = await Admin.findById(decoded.id);
+            } else {
+                user = await Student.findById(decoded.id);
+            }
+
             if (user && user.accountStatus !== "blocked") {
                 req.user = user;
                 req.userId = user._id;
-                req.userRole = user.role;
+                req.userRole = role || "student";
             } else {
                 req.user = null;
                 req.userId = null;

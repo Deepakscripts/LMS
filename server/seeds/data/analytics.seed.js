@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import {
     Analytics,
-    User,
+    Student,
     Enrollment,
     Payment,
     Course,
@@ -11,12 +11,12 @@ export const seedAnalytics = async () => {
     const analyticsData = [];
 
     // Get all data for calculations
-    const allUsers = await User.find({ role: "student" });
+    const allStudents = await Student.find();
     const allEnrollments = await Enrollment.find();
     const allPayments = await Payment.find({ status: "verified" });
     const allCourses = await Course.find().select("_id title");
 
-    if (allUsers.length === 0) {
+    if (allStudents.length === 0) {
         console.log("⚠️  Skipping analytics: No data found to analyze");
         return;
     }
@@ -44,7 +44,7 @@ export const seedAnalytics = async () => {
         );
         cumulativeStudents = Math.min(
             cumulativeStudents + newStudents,
-            allUsers.length
+            allStudents.length
         );
 
         // New enrollments that day (0-15 per day, increasing over time)
@@ -105,7 +105,7 @@ export const seedAnalytics = async () => {
 
     // Update the last entry with actual current data
     const latestAnalytics = analyticsData[analyticsData.length - 1];
-    latestAnalytics.totalStudents = allUsers.length;
+    latestAnalytics.totalStudents = allStudents.length;
     latestAnalytics.totalEnrollments = allEnrollments.length;
     latestAnalytics.revenue = allPayments.reduce(
         (sum, p) => sum + (p.amountPaid || 0),
@@ -145,12 +145,11 @@ export const seedAnalytics = async () => {
         enrollments: cp.enrollments,
     }));
 
-    // Recent active users (students who logged in last 7 days)
-    const recentActiveUsers = await User.countDocuments({
-        role: "student",
+    // Recent active students (who logged in last 7 days)
+    const recentActiveStudents = await Student.countDocuments({
         lastLogin: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
     });
-    latestAnalytics.activeUsersToday = recentActiveUsers;
+    latestAnalytics.activeUsersToday = recentActiveStudents;
 
     await Analytics.insertMany(analyticsData);
 
@@ -177,7 +176,7 @@ export const seedAnalytics = async () => {
         `      - Total Revenue: ₹${totalRevenue.toLocaleString("en-IN")}`
     );
     console.log(
-        `      - Active Users (last 7 days): ${latestAnalytics.activeUsersToday}`
+        `      - Active Students (last 7 days): ${latestAnalytics.activeUsersToday}`
     );
     console.log(`   📈 Averages:`);
     console.log(`      - Avg Daily Students: ${avgDailyStudents}`);

@@ -269,4 +269,3 @@ export default function SmoothLineChart({ data, height = 400, series = [], onDat
     </div>
   );
 }
-

@@ -285,4 +285,3 @@ export default function RadarChart({ data, height = 500, onDateChange }) {
     </div>
   );
 }
-

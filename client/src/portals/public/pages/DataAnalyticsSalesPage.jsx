@@ -424,4 +424,3 @@ const DataAnalytics = () => {
 };
 
 export default DataAnalytics;
-

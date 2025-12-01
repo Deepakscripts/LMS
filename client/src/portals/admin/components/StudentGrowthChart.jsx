@@ -202,4 +202,3 @@ export default function LineChart({ data, height = 400, onDateChange }) {
     </div>
   );
 }
-

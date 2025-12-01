@@ -1,4 +1,4 @@
-import { User, Course, Enrollment } from "../../models/index.js";
+import { Student, Course, Enrollment } from "../../models/index.js";
 
 /**
  * @desc    Get all dashboard stats at once (RECOMMENDED)
@@ -181,9 +181,7 @@ export const getAllEnrolledStudents = async (req, res) => {
         } = req.query;
 
         // Build match conditions
-        const matchConditions = {
-            role: "student", // Only get students
-        };
+        const matchConditions = {};
 
         // Search by student name (first name, middle name, or last name)
         if (studentName) {
@@ -224,7 +222,7 @@ export const getAllEnrolledStudents = async (req, res) => {
         }
 
         // Build aggregation pipeline
-        const aggregate = User.aggregate([
+        const aggregate = Student.aggregate([
             // Match stage - filter documents
             { $match: matchConditions },
 
@@ -292,7 +290,7 @@ export const getAllEnrolledStudents = async (req, res) => {
         };
 
         // Execute pagination
-        const result = await User.aggregatePaginate(aggregate, options);
+        const result = await Student.aggregatePaginate(aggregate, options);
 
         res.json({
             success: true,
@@ -314,10 +312,9 @@ export const getAllEnrolledStudents = async (req, res) => {
  */
 export const getCollegesList = async (req, res) => {
     try {
-        const colleges = await User.aggregate([
+        const colleges = await Student.aggregate([
             {
                 $match: {
-                    role: "student",
                     collegeName: { $exists: true, $ne: null },
                 },
             },
@@ -344,10 +341,9 @@ export const getCollegesList = async (req, res) => {
  */
 export const getCoursesList = async (req, res) => {
     try {
-        const courses = await User.aggregate([
+        const courses = await Student.aggregate([
             {
                 $match: {
-                    role: "student",
                     courseName: { $exists: true, $ne: null },
                 },
             },
@@ -376,11 +372,8 @@ export const getStudentInfoById = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const student = await User.findOne({
-            _id: id,
-            role: "student",
-        }).select(
-            "-password -lmsPassword -resetPasswordToken -googleId -githubId"
+        const student = await Student.findById(id).select(
+            "-lmsPassword -resetPasswordToken -googleId -githubId"
         );
 
         if (!student) {
@@ -395,7 +388,7 @@ export const getStudentInfoById = async (req, res) => {
             data: student,
         });
     } catch (error) {
-        console.error("Get enrollment error:", error);
+        console.error("Get student error:", error);
         res.status(500).json({
             success: false,
             message: "Failed to get student details",

@@ -8,7 +8,8 @@ import Referral from "./referral.js";
 import RefreshToken from "./refreshtoken.js";
 import Submission from "./submission.js";
 import SupportQuery from "./supportquery.js";
-import User from "./user.js";
+import Student from "./student.js";
+import Admin from "./admin.js";
 
 export {
     Analytics,
@@ -21,5 +22,6 @@ export {
     RefreshToken,
     Submission,
     SupportQuery,
-    User,
+    Student,
+    Admin,
 };

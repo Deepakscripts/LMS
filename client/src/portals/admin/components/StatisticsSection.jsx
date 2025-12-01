@@ -89,4 +89,3 @@ const StatisticsSection = () => {
 };
 
 export default StatisticsSection;
-

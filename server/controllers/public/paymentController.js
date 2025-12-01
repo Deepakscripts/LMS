@@ -1,4 +1,4 @@
-import { Payment, User, Course, Enrollment } from "../../models/index.js";
+import { Payment, Student, Course, Enrollment } from "../../models/index.js";
 
 export const submitPaymentProof = async (req, res) => {
     try {
@@ -17,8 +17,8 @@ export const submitPaymentProof = async (req, res) => {
         const screenshotUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
         // Verify student exists
-        const studentUser = await User.findById(studentId);
-        if (!studentUser) {
+        const student = await Student.findById(studentId);
+        if (!student) {
             return res.status(404).json({
                 success: false,
                 message: "Student not found",

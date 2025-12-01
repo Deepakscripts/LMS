@@ -526,4 +526,3 @@ const EnrollmentsTable = () => {
 };
 
 export default EnrollmentsTable;
-

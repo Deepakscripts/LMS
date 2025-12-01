@@ -1,4 +1,4 @@
-import { User, RefreshToken } from "../../models/index.js";
+import { Student, RefreshToken } from "../../models/index.js";
 
 export const createEnrollment = async (req, res) => {
     try {
@@ -17,9 +17,9 @@ export const createEnrollment = async (req, res) => {
             referredBy,
         } = req.validatedData;
 
-        // Check if user already exists
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
+        // Check if student already exists
+        const existingStudent = await Student.findOne({ email });
+        if (existingStudent) {
             return res.status(409).json({
                 success: false,
                 message: "An account with this email already exists",
@@ -29,7 +29,9 @@ export const createEnrollment = async (req, res) => {
         // Validate referral code if provided
         let referrerExists = false;
         if (referredBy && referredBy.trim() !== "") {
-            const referrer = await User.findOne({ myReferralCode: referredBy });
+            const referrer = await Student.findOne({
+                myReferralCode: referredBy,
+            });
             if (!referrer) {
                 return res.status(400).json({
                     success: false,
@@ -40,10 +42,10 @@ export const createEnrollment = async (req, res) => {
             referrerExists = true;
         }
 
-        // Create new user enrollment
-        const user = await User.create({
+        // Create new student enrollment
+        const student = await Student.create({
             email,
-            password,
+            lmsPassword: password, // Will be hashed by pre-save hook
             name,
             middleName: middleName || undefined,
             lastName,
@@ -54,12 +56,11 @@ export const createEnrollment = async (req, res) => {
             yearOfStudy,
             referredBy: referredBy || undefined,
             accountStatus: "pending",
-            role: "student",
         });
 
         // Update referrer's referral count
         if (referrerExists && referredBy) {
-            await User.findOneAndUpdate(
+            await Student.findOneAndUpdate(
                 { myReferralCode: referredBy },
                 {
                     $inc: { referralCount: 1 },
@@ -71,22 +72,22 @@ export const createEnrollment = async (req, res) => {
             );
         }
 
-        // Get user data without sensitive fields
-        const enrolledUser = await User.findById(user._id).select(
-            "-password -resetPasswordToken"
+        // Get student data without sensitive fields
+        const enrolledStudent = await Student.findById(student._id).select(
+            "-lmsPassword -resetPasswordToken"
         );
 
         res.status(201).json({
             success: true,
             message: "Enrollment successful! Please proceed to payment.",
             data: {
-                userId: enrolledUser._id,
-                name: `${enrolledUser.name} ${enrolledUser.lastName}`,
-                email: enrolledUser.email,
-                myReferralCode: enrolledUser.myReferralCode,
-                accountStatus: enrolledUser.accountStatus,
-                collegeName: enrolledUser.collegeName,
-                courseName: enrolledUser.courseName,
+                userId: enrolledStudent._id,
+                name: `${enrolledStudent.name} ${enrolledStudent.lastName}`,
+                email: enrolledStudent.email,
+                myReferralCode: enrolledStudent.myReferralCode,
+                accountStatus: enrolledStudent.accountStatus,
+                collegeName: enrolledStudent.collegeName,
+                courseName: enrolledStudent.courseName,
             },
         });
     } catch (error) {
@@ -112,20 +113,20 @@ export const createEnrollment = async (req, res) => {
 // ============================================
 export const getCurrentUser = async (req, res) => {
     try {
-        const user = await User.findById(req.userId).select(
-            "-password -lmsPassword -resetPasswordToken -resetPasswordExpire -googleId -githubId"
+        const student = await Student.findById(req.userId).select(
+            "-lmsPassword -resetPasswordToken -resetPasswordExpire -googleId -githubId"
         );
 
-        if (!user) {
+        if (!student) {
             return res.status(404).json({
                 success: false,
-                message: "User not found",
+                message: "Student not found",
             });
         }
 
         res.json({
             success: true,
-            data: { user },
+            data: { user: student },
         });
     } catch (error) {
         console.error("Get current user error:", error);

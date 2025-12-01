@@ -1,5 +1,5 @@
 import {
-    User,
+    Student,
     Course,
     Enrollment,
     Certificate,
@@ -90,7 +90,7 @@ async function getTotalActiveStudentsBreakdown(dateFilter) {
         accountStatus: "verified", // ✅ Only verified students
     };
 
-    const stats = await User.aggregate([
+    const stats = await Student.aggregate([
         { $match: baseQuery },
         {
             $facet: {
@@ -200,7 +200,7 @@ async function getActiveStudentsPerDomain(dateFilter) {
         // Lookup student details to verify status
         {
             $lookup: {
-                from: "users",
+                from: "students",
                 localField: "student",
                 foreignField: "_id",
                 as: "studentDetails",
@@ -272,7 +272,7 @@ async function getCompletionStatistics(dateFilter) {
         // Lookup student details
         {
             $lookup: {
-                from: "users",
+                from: "students",
                 localField: "student",
                 foreignField: "_id",
                 as: "studentDetails",
@@ -538,7 +538,7 @@ export const getAllStudentsWithEnrollments = async (req, res) => {
             matchConditions.yearOfStudy = yearOfStudy;
         }
 
-        const aggregate = User.aggregate([
+        const aggregate = Student.aggregate([
             // Stage 1: Match students
             { $match: matchConditions },
 
@@ -664,10 +664,10 @@ export const getAllStudentsWithEnrollments = async (req, res) => {
                                   capstoneStatus === "submitted"
                                       ? "submitted"
                                       : capstoneStatus === "graded"
-                                      ? "graded"
-                                      : capstoneStatus === "in-progress"
-                                      ? "In Progress"
-                                      : "Not Submitted",
+                                        ? "graded"
+                                        : capstoneStatus === "in-progress"
+                                          ? "In Progress"
+                                          : "Not Submitted",
                           },
                       },
                   ]
@@ -726,7 +726,7 @@ export const getAllStudentsWithEnrollments = async (req, res) => {
             },
         };
 
-        const result = await User.aggregatePaginate(aggregate, options);
+        const result = await Student.aggregatePaginate(aggregate, options);
 
         res.json({
             success: true,
@@ -748,7 +748,7 @@ export const getAllStudentsWithEnrollments = async (req, res) => {
  */
 export const getFilterOptions = async (req, res) => {
     try {
-        const options = await User.aggregate([
+        const options = await Student.aggregate([
             { $match: { role: "student", accountStatus: "verified" } },
             {
                 $facet: {
@@ -1002,7 +1002,7 @@ export const exportStudentsCSV = async (req, res) => {
             };
         }
 
-        const students = await User.aggregate([
+        const students = await Student.aggregate([
             { $match: matchConditions },
             {
                 $lookup: {

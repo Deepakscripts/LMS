@@ -50,7 +50,6 @@ export const validateRefreshToken = (req, res, next) => {
     }
 };
 
-
 // Forgot Password Schema
 export const forgotPasswordSchema = z.object({
     email: z.email("Invalid email address"),
@@ -84,7 +83,6 @@ export const resetPasswordSchema = z
         message: "Passwords don't match",
         path: ["confirmPassword"],
     });
-
 
 // Middleware function for Reset Password Validation
 export const validateResetPassword = (req, res, next) => {

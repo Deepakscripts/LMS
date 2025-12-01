@@ -1,5 +1,5 @@
 import {
-    User,
+    Student,
     Course,
     Enrollment,
     Certificate,
@@ -41,7 +41,7 @@ export const getDashboardStats = async (req, res) => {
         };
 
         // Total users count
-        const totalUsers = await User.countDocuments(dateFilter);
+        const totalUsers = await Student.countDocuments(dateFilter);
 
         // Active courses (published/active status)
         const activeCourses = await Course.countDocuments({
@@ -142,14 +142,13 @@ export const getDashboardStats = async (req, res) => {
         };
 
         // Previous period metrics
-        const prevUsers = await User.countDocuments(previousDateFilter);
+        const prevUsers = await Student.countDocuments(previousDateFilter);
         const prevCourses = await Course.countDocuments({
             status: "published",
             ...previousDateFilter,
         });
-        const prevCertificates = await Certificate.countDocuments(
-            previousDateFilter
-        );
+        const prevCertificates =
+            await Certificate.countDocuments(previousDateFilter);
 
         const prevRevenue = await Payment.aggregate([
             {
@@ -166,8 +165,8 @@ export const getDashboardStats = async (req, res) => {
             prevUsers > 0
                 ? (((totalUsers - prevUsers) / prevUsers) * 100).toFixed(1)
                 : totalUsers > 0
-                ? 100
-                : 0;
+                  ? 100
+                  : 0;
 
         const courseChange =
             prevCourses > 0
@@ -175,8 +174,8 @@ export const getDashboardStats = async (req, res) => {
                       1
                   )
                 : activeCourses > 0
-                ? 100
-                : 0;
+                  ? 100
+                  : 0;
 
         const certChange =
             prevCertificates > 0
@@ -186,8 +185,8 @@ export const getDashboardStats = async (req, res) => {
                       100
                   ).toFixed(1)
                 : certificatesIssued > 0
-                ? 100
-                : 0;
+                  ? 100
+                  : 0;
 
         const currentRevenue =
             revenueStats.length > 0 ? revenueStats[0].total : 0;
@@ -200,8 +199,8 @@ export const getDashboardStats = async (req, res) => {
                       100
                   ).toFixed(1)
                 : currentRevenue > 0
-                ? 100
-                : 0;
+                  ? 100
+                  : 0;
 
         // Calculate dynamic time spent change
         const prevTimeStats = await Enrollment.aggregate([
@@ -246,8 +245,8 @@ export const getDashboardStats = async (req, res) => {
                       100
                   ).toFixed(1)
                 : currentAvgTimeSpent > 0
-                ? 100
-                : 0;
+                  ? 100
+                  : 0;
 
         // Calculate dynamic completion rate change
         const prevCompletionStats = await Enrollment.aggregate([
@@ -273,8 +272,8 @@ export const getDashboardStats = async (req, res) => {
                       100
                   ).toFixed(1)
                 : avgCompletionRate > 0
-                ? 100
-                : 0;
+                  ? 100
+                  : 0;
 
         res.json({
             success: true,
@@ -508,7 +507,7 @@ export const getStudentGrowth = async (req, res) => {
             : new Date(new Date().getFullYear(), 0, 1);
         const end = endDate ? new Date(endDate) : new Date();
 
-        const growthData = await User.aggregate([
+        const growthData = await Student.aggregate([
             {
                 $match: {
                     createdAt: { $gte: start, $lte: end },
@@ -527,7 +526,7 @@ export const getStudentGrowth = async (req, res) => {
         ]);
 
         // Get initial count before start date
-        const initialCount = await User.countDocuments({
+        const initialCount = await Student.countDocuments({
             createdAt: { $lt: start },
         });
 
@@ -1356,7 +1355,7 @@ export const getTopLeaderboard = async (req, res) => {
             { $limit: limit },
             {
                 $lookup: {
-                    from: "users",
+                    from: "students",
                     localField: "_id",
                     foreignField: "_id",
                     as: "userInfo",
@@ -1445,7 +1444,7 @@ export const getRecentCertifications = async (req, res) => {
             { $limit: limit },
             {
                 $lookup: {
-                    from: "users",
+                    from: "students",
                     localField: "user",
                     foreignField: "_id",
                     as: "userInfo",

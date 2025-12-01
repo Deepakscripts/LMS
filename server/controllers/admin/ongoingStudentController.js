@@ -1,4 +1,4 @@
-import { User } from "../../models/index.js";
+import { Student } from "../../models/index.js";
 
 /**
  * Get all pending users (students awaiting verification)
@@ -21,8 +21,7 @@ export const getOngoingUsers = async (req, res) => {
 
         // Build match conditions - ONLY pending students
         const matchConditions = {
-            role: "student",
-            accountStatus: "pending", // ✅ Only pending users
+            accountStatus: "pending", // ✅ Only pending students
         };
 
         // Search by student name (first/middle/last name)
@@ -58,7 +57,7 @@ export const getOngoingUsers = async (req, res) => {
         }
 
         // Build aggregation pipeline
-        const aggregate = User.aggregate([
+        const aggregate = Student.aggregate([
             // Stage 1: Match pending students with filters
             { $match: matchConditions },
 
@@ -146,7 +145,7 @@ export const getOngoingUsers = async (req, res) => {
         };
 
         // Execute pagination
-        const result = await User.aggregatePaginate(aggregate, options);
+        const result = await Student.aggregatePaginate(aggregate, options);
 
         res.json({
             success: true,
@@ -169,8 +168,8 @@ export const getOngoingUsers = async (req, res) => {
  */
 export const getOngoingUsersFilterOptions = async (req, res) => {
     try {
-        const filters = await User.aggregate([
-            { $match: { role: "student", accountStatus: "pending" } },
+        const filters = await Student.aggregate([
+            { $match: { accountStatus: "pending" } },
             {
                 $facet: {
                     colleges: [
@@ -244,71 +243,71 @@ export const approveOngoingUser = async (req, res) => {
     try {
         const { userId } = req.params;
 
-        const user = await User.findOneAndUpdate(
-            { _id: userId, role: "student", accountStatus: "pending" },
+        const student = await Student.findOneAndUpdate(
+            { _id: userId, accountStatus: "pending" },
             { accountStatus: "verified" },
             { new: true }
-        ).select("-password -lmsPassword -resetPasswordToken");
+        ).select("-lmsPassword -resetPasswordToken");
 
-        if (!user) {
+        if (!student) {
             return res.status(404).json({
                 success: false,
-                message: "Pending user not found",
+                message: "Pending student not found",
             });
         }
 
         // TODO: Send approval email to student
-        // await sendApprovalEmail(user.email, user.name);
+        // await sendApprovalEmail(student.email, student.name);
 
         res.json({
             success: true,
-            message: "User approved successfully",
-            data: user,
+            message: "Student approved successfully",
+            data: student,
         });
     } catch (error) {
-        console.error("Approve user error:", error);
+        console.error("Approve student error:", error);
         res.status(500).json({
             success: false,
-            message: "Failed to approve user",
+            message: "Failed to approve student",
             error: error.message,
         });
     }
 };
 
 /**
- * Reject pending user (change status to blocked or delete)
+ * Reject pending student (change status to blocked or delete)
  */
 export const rejectOngoingUser = async (req, res) => {
     try {
         const { userId } = req.params;
         const { reason } = req.body;
 
-        const user = await User.findOneAndUpdate(
-            { _id: userId, role: "student", accountStatus: "pending" },
+        const student = await Student.findOneAndUpdate(
+            { _id: userId, accountStatus: "pending" },
             { accountStatus: "blocked" },
             { new: true }
-        ).select("-password -lmsPassword -resetPasswordToken");
+        ).select("-lmsPassword -resetPasswordToken");
 
-        if (!user) {
+        if (!student) {
             return res.status(404).json({
                 success: false,
-                message: "Pending user not found",
+                message: "Pending student not found",
             });
         }
 
         // TODO: Send rejection email with reason
-        // await sendRejectionEmail(user.email, user.name, reason);
+        // await sendRejectionEmail(student.email, student.name, reason);
 
         res.json({
             success: true,
-            message: "User rejected successfully",
-            data: user,
+            message: "Student rejected successfully",
+            data: student,
         });
     } catch (error) {
-        console.error("Reject user error:", error);
+        console.error("Reject student error:", error);
         res.status(500).json({
             success: false,
-            message: "Failed to reject user",
+            message: "Failed to reject student",
             error: error.message,
         });
     }
