@@ -4,7 +4,7 @@ import { selectIsAuthenticated, openLoginPopup } from '../../redux/slices';
 import { toast } from 'sonner';
 import { useNavigateWithRedux } from '../hooks/useNavigateWithRedux';
 
-const publicProtectedRoute = ({ children }) => {
+const PublicProtectedRoute = ({ children }) => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const dispatch = useDispatch();
   const navigate = useNavigateWithRedux();
@@ -23,4 +23,4 @@ const publicProtectedRoute = ({ children }) => {
   return children ?? null;
 };
 
-export default publicProtectedRoute;
+export default PublicProtectedRoute;
