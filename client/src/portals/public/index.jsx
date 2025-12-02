@@ -21,10 +21,12 @@ import MobileDev from './pages/MobileDevSalesPage.jsx';
 import UX from './pages/UXSalesPage.jsx';
 import AboutUs from './pages/AboutUSPage.jsx';
 import EnrollmentDetails from './pages/EnrollmentForm.jsx';
-import EnrollmentPayment from './components/UpdatedPaymentPage.jsx';
+import EnrollmentPayment from './pages/EnrollmentPayment.jsx';
 import Github from './pages/VersionControlWithGit.jsx';
 
 import PageNotFound from '@/common/pages/PageNotFound.jsx';
+import AuthSuccess from './pages/AuthSuccess.jsx';
+import ProtectedRoute from '@/common/components/ProtectedRoute.jsx';
 
 const PublicPortal = () => {
   return (
@@ -51,9 +53,23 @@ const PublicPortal = () => {
           <Route path="/mobiledev" element={<MobileDev />} />
           <Route path="/ux" element={<UX />} />
           <Route path="/github" element={<Github />} />
-          <Route path="/enroll" element={<EnrollmentDetails />} />
-          <Route path="/enroll/payment" element={<EnrollmentPayment />} />
-          <Route path="/auth-success" element={<authSuccess />} />
+          <Route
+            path="/enroll"
+            element={
+              <ProtectedRoute>
+                <EnrollmentDetails />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/enroll/payment"
+            element={
+              <ProtectedRoute>
+                <EnrollmentPayment />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/auth-success" element={<AuthSuccess />} />
           <Route path="*" element={<PageNotFound />} />
         </Route>
       </Routes>
@@ -62,3 +78,4 @@ const PublicPortal = () => {
 };
 
 export default PublicPortal;
+

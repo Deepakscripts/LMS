@@ -23,6 +23,9 @@ export {
   addNotification,
   removeNotification,
   clearNotifications,
+  openLoginPopup,
+  closeLoginPopup,
+  toggleLoginPopup,
   selectUI,
   selectCurrentNavigation,
   selectStudentSidebarOpen,
@@ -81,3 +84,28 @@ export {
   selectSupport,
   selectSupportQueries,
 } from './studentSlice';
+
+// Enrollment Slice
+export {
+  default as enrollmentReducer,
+  // Actions
+  setEnrollmentDetails,
+  setPaymentDetails,
+  setReferralCode,
+  setCurrentStep,
+  setIsSubmitted,
+  resetEnrollment,
+  updateEnrollmentField,
+  updatePaymentField,
+  setScreenshot, // ← Added
+  clearScreenshot, // ← Added
+  // Selectors
+  selectEnrollment,
+  selectEnrollmentDetails,
+  selectPaymentDetails,
+  selectReferralCode,
+  selectCurrentStep,
+  selectIsSubmitted,
+  selectFullEnrollmentData,
+} from './enrollmentSlice';
+
