@@ -849,9 +849,15 @@ const StudentLearningPage = () => {
                 Complete all modules and capstone to earn your certificate.
               </p>
               <button
-                disabled={!allModulesCompleted || (!course.capstone?.isCompleted && !course.capstone?.isSubmitted)}
+                disabled={
+                  !allModulesCompleted ||
+                  (!course.capstone?.isCompleted && !course.capstone?.isSubmitted)
+                }
                 onClick={() => {
-                  if (allModulesCompleted && (course.capstone?.isCompleted || course.capstone?.isSubmitted)) {
+                  if (
+                    allModulesCompleted &&
+                    (course.capstone?.isCompleted || course.capstone?.isSubmitted)
+                  ) {
                     window.open(`/student/certificates/${coursename}`, '_blank');
                   }
                 }}

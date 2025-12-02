@@ -159,7 +159,8 @@ export const getCourseQuizzes = async (req, res) => {
         const quizzes = [];
         sortedModules.forEach((module, moduleIndex) => {
             // First module is always open, others depend on previous module completion
-            const isModuleLocked = moduleIndex > 0 && !moduleCompletionStatus[moduleIndex - 1];
+            const isModuleLocked =
+                moduleIndex > 0 && !moduleCompletionStatus[moduleIndex - 1];
 
             module.quizzes.forEach((quiz) => {
                 const submission = submissions.find(
@@ -189,11 +190,17 @@ export const getCourseQuizzes = async (req, res) => {
                     score: submission
                         ? `${submission.quizScore}/${submission.totalQuestions}`
                         : null,
-                    submissionDetails: submission ? {
-                        quizScore: submission.quizScore,
-                        totalQuestions: submission.totalQuestions,
-                        percentage: Math.round((submission.quizScore / submission.totalQuestions) * 100),
-                    } : null,
+                    submissionDetails: submission
+                        ? {
+                              quizScore: submission.quizScore,
+                              totalQuestions: submission.totalQuestions,
+                              percentage: Math.round(
+                                  (submission.quizScore /
+                                      submission.totalQuestions) *
+                                      100
+                              ),
+                          }
+                        : null,
                 });
             });
         });
@@ -291,13 +298,18 @@ export const getQuizQuestions = async (req, res) => {
         let isModuleLocked = false;
         if (moduleIndex > 0) {
             const prevModule = sortedModules[moduleIndex - 1];
-            isModuleLocked = !isModuleCompleted(prevModule, completedQuizIds, completedTaskIds);
+            isModuleLocked = !isModuleCompleted(
+                prevModule,
+                completedQuizIds,
+                completedTaskIds
+            );
         }
 
         if (isModuleLocked) {
             return res.status(403).json({
                 success: false,
-                message: "This quiz is locked. Complete the previous module first.",
+                message:
+                    "This quiz is locked. Complete the previous module first.",
                 code: ERROR_CODES.MODULE_LOCKED,
             });
         }
@@ -319,12 +331,12 @@ export const getQuizQuestions = async (req, res) => {
                 question: q.questionText,
                 options: q.options,
             };
-            
+
             // If submitted, include correct answer for review
             if (isSubmitted) {
                 baseQuestion.correctAnswer = q.correctAnswer;
             }
-            
+
             return baseQuestion;
         });
 
@@ -337,11 +349,17 @@ export const getQuizQuestions = async (req, res) => {
                 totalQuestions: questions.length,
                 status: isSubmitted ? "Submitted" : "Open",
                 isSubmitted,
-                submissionDetails: submission ? {
-                    quizScore: submission.quizScore,
-                    totalQuestions: submission.totalQuestions,
-                    percentage: Math.round((submission.quizScore / submission.totalQuestions) * 100),
-                } : null,
+                submissionDetails: submission
+                    ? {
+                          quizScore: submission.quizScore,
+                          totalQuestions: submission.totalQuestions,
+                          percentage: Math.round(
+                              (submission.quizScore /
+                                  submission.totalQuestions) *
+                                  100
+                          ),
+                      }
+                    : null,
             },
         });
     } catch (error) {
@@ -433,11 +451,16 @@ export const submitQuiz = async (req, res) => {
         // Check if module is locked (first module is always open)
         if (moduleIndex > 0) {
             const prevModule = sortedModules[moduleIndex - 1];
-            const isModuleLocked = !isModuleCompleted(prevModule, completedQuizIds, completedTaskIds);
+            const isModuleLocked = !isModuleCompleted(
+                prevModule,
+                completedQuizIds,
+                completedTaskIds
+            );
             if (isModuleLocked) {
                 return res.status(403).json({
                     success: false,
-                    message: "Cannot submit quiz. The module is locked. Complete the previous module first.",
+                    message:
+                        "Cannot submit quiz. The module is locked. Complete the previous module first.",
                     code: ERROR_CODES.MODULE_LOCKED,
                 });
             }
@@ -454,7 +477,8 @@ export const submitQuiz = async (req, res) => {
         if (existingSubmission) {
             return res.status(403).json({
                 success: false,
-                message: "You have already submitted this quiz. Retakes are not allowed.",
+                message:
+                    "You have already submitted this quiz. Retakes are not allowed.",
                 code: ERROR_CODES.ALREADY_SUBMITTED,
             });
         }

@@ -21,7 +21,7 @@ const quizSchema = new mongoose.Schema(
             type: String,
             enum: ["Locked", "Open", "Submitted"],
             default: "Locked",
-        }
+        },
     },
     { _id: true }
 );
@@ -35,7 +35,7 @@ const taskSchema = new mongoose.Schema(
             type: String,
             enum: ["Locked", "Open", "Submitted"],
             default: "Locked",
-        }
+        },
     },
     { _id: true }
 );
@@ -57,7 +57,7 @@ const moduleSchema = new mongoose.Schema(
             type: String,
             enum: ["Locked", "Open", "Completed"],
             default: "Locked",
-        }
+        },
     },
     { _id: true }
 );

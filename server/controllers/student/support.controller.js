@@ -9,9 +9,9 @@ import { ERROR_CODES } from "../../middlewares/globalErrorHandler.js";
 export const createSupportQuery = async (req, res) => {
     try {
         const validation = createSupportQuerySchema.safeParse(req.body);
-        console.log('req :>> ', req);
-        console.log('req.body :>> ', req.body);
-        console.log('validation :>> ', validation);
+        console.log("req :>> ", req);
+        console.log("req.body :>> ", req.body);
+        console.log("validation :>> ", validation);
         if (!validation.success) {
             return res.status(400).json({
                 success: false,

@@ -284,7 +284,12 @@ const CapstoneCard = ({ capstone, courseId, allModulesCompleted, onComplete }) =
 
         <button
           onClick={handleSubmit}
-          disabled={!githubLink || !isValidGithubUrl(githubLink) || (liveLink && !isValidUrl(liveLink)) || submitting}
+          disabled={
+            !githubLink ||
+            !isValidGithubUrl(githubLink) ||
+            (liveLink && !isValidUrl(liveLink)) ||
+            submitting
+          }
           className={`w-full py-3 rounded-lg font-medium text-white transition-all flex items-center justify-center gap-2 ${
             submitting
               ? 'bg-zinc-600 cursor-wait'

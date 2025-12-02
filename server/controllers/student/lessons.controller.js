@@ -26,7 +26,13 @@ export const markModuleAccessed = async (req, res) => {
         const enrollment = await Enrollment.findOne({
             student: req.userId,
             course: courseId,
-            paymentStatus: { $in: ["PARTIAL_PAID", "FULLY_PAYMENT_VERIFICATION_PENDING", "FULLY_PAID"] },
+            paymentStatus: {
+                $in: [
+                    "PARTIAL_PAID",
+                    "FULLY_PAYMENT_VERIFICATION_PENDING",
+                    "FULLY_PAID",
+                ],
+            },
         });
 
         if (!enrollment) {
@@ -71,7 +77,13 @@ export const getCourseProgress = async (req, res) => {
         const enrollment = await Enrollment.findOne({
             student: req.userId,
             course: course._id,
-            paymentStatus: { $in: ["PARTIAL_PAID", "FULLY_PAYMENT_VERIFICATION_PENDING", "FULLY_PAID"] },
+            paymentStatus: {
+                $in: [
+                    "PARTIAL_PAID",
+                    "FULLY_PAYMENT_VERIFICATION_PENDING",
+                    "FULLY_PAID",
+                ],
+            },
         });
 
         if (!enrollment) {

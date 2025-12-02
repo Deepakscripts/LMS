@@ -73,34 +73,37 @@ export const submitQuizSchema = z.object({
 });
 
 // Assignment Submission Schema
-export const submitAssignmentSchema = z.object({
-    courseId: z.string().min(1, "Course ID is required"),
-    moduleId: z.string().optional(),
-    taskId: z.string().optional(),
-    isCapstone: z.boolean().optional(),
-    githubLink: z
-        .string()
-        .url("Invalid GitHub URL")
-        .refine((url) => url.includes("github.com"), {
-            message: "Must be a valid GitHub repository URL",
-        }),
-    liveLink: z
-        .string()
-        .url("Invalid Live Link URL")
-        .optional()
-        .or(z.literal("")),
-    additionalNotes: z.string().optional(),
-}).refine(
-    (data) => {
-        // Either isCapstone is true OR both moduleId and taskId are provided
-        if (data.isCapstone) return true;
-        return data.moduleId && data.taskId;
-    },
-    {
-        message: "Module ID and Task ID are required for non-capstone assignments",
-        path: ["moduleId"],
-    }
-);
+export const submitAssignmentSchema = z
+    .object({
+        courseId: z.string().min(1, "Course ID is required"),
+        moduleId: z.string().optional(),
+        taskId: z.string().optional(),
+        isCapstone: z.boolean().optional(),
+        githubLink: z
+            .string()
+            .url("Invalid GitHub URL")
+            .refine((url) => url.includes("github.com"), {
+                message: "Must be a valid GitHub repository URL",
+            }),
+        liveLink: z
+            .string()
+            .url("Invalid Live Link URL")
+            .optional()
+            .or(z.literal("")),
+        additionalNotes: z.string().optional(),
+    })
+    .refine(
+        (data) => {
+            // Either isCapstone is true OR both moduleId and taskId are provided
+            if (data.isCapstone) return true;
+            return data.moduleId && data.taskId;
+        },
+        {
+            message:
+                "Module ID and Task ID are required for non-capstone assignments",
+            path: ["moduleId"],
+        }
+    );
 
 // Module Access Schema (replaces Lesson Completion)
 export const markModuleAccessedSchema = z.object({

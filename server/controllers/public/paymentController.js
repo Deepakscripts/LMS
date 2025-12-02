@@ -21,7 +21,10 @@ export const submitPaymentProof = async (req, res) => {
         const screenshotUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
         // Verify enrollment exists and get details
-        const enrollment = await Enrollment.findById(enrollmentId).populate("course", "title price");
+        const enrollment = await Enrollment.findById(enrollmentId).populate(
+            "course",
+            "title price"
+        );
         if (!enrollment) {
             return res.status(404).json({
                 success: false,
@@ -39,8 +42,12 @@ export const submitPaymentProof = async (req, res) => {
         }
 
         // Determine payment amount based on type
-        const coursePrice = enrollment.courseAmount || enrollment.course.price || 500;
-        const amount = paymentType === 'partial' ? Math.ceil(coursePrice / 2) : (enrollment.amountRemaining || coursePrice);
+        const coursePrice =
+            enrollment.courseAmount || enrollment.course.price || 500;
+        const amount =
+            paymentType === "partial"
+                ? Math.ceil(coursePrice / 2)
+                : enrollment.amountRemaining || coursePrice;
 
         // Create payment record
         const payment = await Payment.create({
@@ -55,7 +62,7 @@ export const submitPaymentProof = async (req, res) => {
         });
 
         // Update enrollment with payment reference and status
-        if (paymentType === 'partial') {
+        if (paymentType === "partial") {
             enrollment.partialPaymentDetails = payment._id;
             enrollment.paymentStatus = "PARTIAL_PAYMENT_VERIFICATION_PENDING";
         } else {
@@ -67,7 +74,8 @@ export const submitPaymentProof = async (req, res) => {
 
         res.status(201).json({
             success: true,
-            message: "Payment proof submitted successfully. It will be verified within 24-48 hours.",
+            message:
+                "Payment proof submitted successfully. It will be verified within 24-48 hours.",
             data: {
                 paymentId: payment._id,
                 transactionId: payment.transactionId,
@@ -125,16 +133,22 @@ export const updatePaymentStatus = async (req, res) => {
             });
         }
 
-        const coursePrice = enrollment.courseAmount || enrollment.course.price || 500;
+        const coursePrice =
+            enrollment.courseAmount || enrollment.course.price || 500;
 
         if (action === "approve") {
             if (paymentType === "partial") {
-                const partialAmount = enrollment.partialPaymentDetails?.amount || Math.ceil(coursePrice / 2);
+                const partialAmount =
+                    enrollment.partialPaymentDetails?.amount ||
+                    Math.ceil(coursePrice / 2);
                 enrollment.paymentStatus = "PARTIAL_PAID";
                 enrollment.amountPaid = partialAmount;
                 enrollment.amountRemaining = coursePrice - partialAmount;
             } else {
-                const fullAmount = enrollment.fullPaymentDetails?.amount || enrollment.amountRemaining || coursePrice;
+                const fullAmount =
+                    enrollment.fullPaymentDetails?.amount ||
+                    enrollment.amountRemaining ||
+                    coursePrice;
                 enrollment.paymentStatus = "FULLY_PAID";
                 enrollment.amountPaid = coursePrice;
                 enrollment.amountRemaining = 0;
@@ -145,7 +159,9 @@ export const updatePaymentStatus = async (req, res) => {
                 enrollment.paymentStatus = "UNPAID";
                 enrollment.partialPaymentDetails = null;
             } else {
-                enrollment.paymentStatus = enrollment.partialPaymentDetails ? "PARTIAL_PAID" : "UNPAID";
+                enrollment.paymentStatus = enrollment.partialPaymentDetails
+                    ? "PARTIAL_PAID"
+                    : "UNPAID";
                 enrollment.fullPaymentDetails = null;
             }
         }

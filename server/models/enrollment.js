@@ -13,12 +13,24 @@ const enrollmentSchema = new mongoose.Schema(
             ref: "Course",
             required: true,
         },
-        
-        partialPaymentDetails: { type: mongoose.Schema.Types.ObjectId, ref: "Payment" },
-        fullPaymentDetails: { type: mongoose.Schema.Types.ObjectId, ref: "Payment" },
+
+        partialPaymentDetails: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Payment",
+        },
+        fullPaymentDetails: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Payment",
+        },
         paymentStatus: {
             type: String,
-            enum: ["UNPAID", "PARTIAL_PAYMENT_VERIFICATION_PENDING", "PARTIAL_PAID", "FULLY_PAYMENT_VERIFICATION_PENDING", "FULLY_PAID"],
+            enum: [
+                "UNPAID",
+                "PARTIAL_PAYMENT_VERIFICATION_PENDING",
+                "PARTIAL_PAID",
+                "FULLY_PAYMENT_VERIFICATION_PENDING",
+                "FULLY_PAID",
+            ],
             default: "UNPAID",
         },
 

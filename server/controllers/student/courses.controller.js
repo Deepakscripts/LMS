@@ -54,7 +54,6 @@ const calculateProgress = (course, completedQuizzes, completedTasks) => {
  */
 export const getMyCourses = async (req, res) => {
     try {
-        
         // Find all enrollments for this student that have some payment
         const enrollments = await Enrollment.find({
             student: req.userId,
@@ -238,7 +237,9 @@ export const getCourseDetails = async (req, res) => {
                         id: task._id,
                         title: task.title,
                         description: task.description,
-                        isCompleted: completedTasks.includes(task._id.toString()),
+                        isCompleted: completedTasks.includes(
+                            task._id.toString()
+                        ),
                         isSubmitted,
                         status: isSubmitted ? "Submitted" : "Open",
                         githubLink: submission?.githubLink,
