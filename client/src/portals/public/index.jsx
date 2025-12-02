@@ -26,7 +26,7 @@ import Github from './pages/VersionControlWithGit.jsx';
 
 import PageNotFound from '@/common/pages/PageNotFound.jsx';
 import AuthSuccess from './pages/AuthSuccess.jsx';
-import ProtectedRoute from '@/common/components/ProtectedRoute.jsx';
+import publicProtectedRoute from '@/common/components/publicProtectedRoute.jsx';
 
 const PublicPortal = () => {
   return (
@@ -56,17 +56,17 @@ const PublicPortal = () => {
           <Route
             path="/enroll"
             element={
-              <ProtectedRoute>
+              <publicProtectedRoute>
                 <EnrollmentDetails />
-              </ProtectedRoute>
+              </publicProtectedRoute>
             }
           />
           <Route
             path="/enroll/payment"
             element={
-              <ProtectedRoute>
+              <publicProtectedRoute>
                 <EnrollmentPayment />
-              </ProtectedRoute>
+              </publicProtectedRoute>
             }
           />
           <Route path="/auth-success" element={<AuthSuccess />} />
@@ -78,4 +78,6 @@ const PublicPortal = () => {
 };
 
 export default PublicPortal;
+
+
 
