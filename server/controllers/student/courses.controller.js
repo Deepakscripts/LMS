@@ -54,7 +54,6 @@ const calculateProgress = (course, completedQuizzes, completedTasks) => {
  */
 export const getMyCourses = async (req, res) => {
     try {
-        console.log("Fetching courses for user:", req.userId);
         
         // Find all enrollments for this student that have some payment
         const enrollments = await Enrollment.find({
@@ -68,9 +67,6 @@ export const getMyCourses = async (req, res) => {
                 "title slug thumbnail modules level stream tags totalDuration"
             )
             .sort({ updatedAt: -1 });
-
-        console.log("Found enrollments:", enrollments.length);
-        console.log("Enrollment statuses:", enrollments.map(e => e.paymentStatus));
 
         const courses = enrollments
             .filter((enrollment) => enrollment.course) // Filter out enrollments with no course
@@ -142,12 +138,6 @@ export const getCourseDetails = async (req, res) => {
                 $nin: ["UNPAID"], // Allow access for any payment status except UNPAID
             },
         });
-
-        console.log("Course details - User:", req.userId, "Course:", course._id);
-        console.log("Enrollment found:", enrollment ? "Yes" : "No");
-        if (enrollment) {
-            console.log("Enrollment status:", enrollment.paymentStatus);
-        }
 
         if (!enrollment) {
             return res.status(403).json({
