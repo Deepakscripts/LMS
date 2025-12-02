@@ -1,5 +1,4 @@
 import {
-  BookOpen,
   Award,
   LayoutDashboard,
   FileText,
@@ -9,23 +8,17 @@ import {
   Settings,
   Crown,
   Book,
-  LogOut,
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useState, useEffect } from 'react';
 
-import {
-  setStudentSidebarOpen,
-  selectCurrentNavigation,
-  selectUser,
-  selectProfileData,
-} from '@/redux/slices';
+import { setStudentSidebarOpen, selectCurrentNavigation } from '@/redux/slices';
+import { selectUser, selectProfileData } from '@/redux/slices';
 import { useNavigateWithRedux } from '@/common/hooks/useNavigateWithRedux';
 
 const StudentNavbar = () => {
   const navigateAndStore = useNavigateWithRedux();
   const dispatch = useDispatch();
-
   const activeTab = useSelector(selectCurrentNavigation);
   const user = useSelector(selectUser);
   const profile = useSelector(selectProfileData);
@@ -66,7 +59,7 @@ const StudentNavbar = () => {
   };
 
   return (
-    <div className="h-full w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col ">
+    <div className="h-full w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col">
       {/* Header */}
       <div className="h-20 flex items-center px-6 border-b border-zinc-800">
         <span className="text-xl font-bold tracking-tighter text-white">

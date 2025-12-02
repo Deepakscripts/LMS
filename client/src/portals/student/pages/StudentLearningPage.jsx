@@ -485,7 +485,7 @@ const StudentLearningPage = () => {
       {/* Sidebar Toggle Button */}
       <button
         onClick={() => setbar(!bar)}
-        className={`fixed top-24 z-50 p-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-l-full shadow-lg transition-all duration-300 ${
+        className={`fixed top-24 z-30 p-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-l-full shadow-lg transition-all duration-300 ${
           bar ? 'right-80' : 'right-0'
         }`}
       >
@@ -494,15 +494,12 @@ const StudentLearningPage = () => {
 
       {/* Sidebar Overlay for Mobile */}
       {bar && isMobile && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          onClick={() => setbar(false)}
-        />
+        <div className="inset-0 bg-black/50 z-30 lg:hidden" onClick={() => setbar(false)} />
       )}
 
       {/* Sidebar */}
       <div
-        className={`fixed lg:static right-0 h-[calc(100vh-5rem)] shrink-0 overflow-hidden transition-all duration-300 ease-in-out z-40 lg:z-auto ${
+        className={`fixed lg:static right-0 h-[calc(100vh-5rem)] shrink-0 overflow-hidden transition-all duration-300 ease-in-out z-30 lg:z-auto ${
           bar ? 'w-80' : 'w-0'
         }`}
       >
