@@ -5,8 +5,10 @@ import { useSubmitAssignment } from '../hooks';
 
 const AssignmentCard = ({ task, courseId, moduleId, onComplete }) => {
   const [githubLink, setGithubLink] = useState(task?.githubLink || '');
-  const [isSubmitted, setIsSubmitted] = useState(task?.isSubmitted || false);
-  const [submissionStatus, setSubmissionStatus] = useState(task?.status || 'pending');
+  // Handle both old 'isSubmitted' and new 'status' field
+  const taskIsSubmitted = task?.status === 'Submitted' || task?.isSubmitted || false;
+  const [isSubmitted, setIsSubmitted] = useState(taskIsSubmitted);
+  const [submissionStatus, setSubmissionStatus] = useState(task?.submissionStatus || task?.status || 'pending');
 
   const { submit, loading: submitting, error: submitError } = useSubmitAssignment();
 

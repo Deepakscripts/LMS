@@ -8,7 +8,6 @@ const questionSchema = new mongoose.Schema(
         questionText: { type: String, required: true },
         options: [{ type: String, required: true }],
         correctAnswer: { type: Number, required: true },
-        isQuestionCompleted: { type: Boolean, default: false },
     },
     { _id: true }
 );
@@ -18,7 +17,11 @@ const quizSchema = new mongoose.Schema(
     {
         title: { type: String, required: true },
         questions: [questionSchema],
-        isQuizCompleted: { type: Boolean, default: false },
+        status: {
+            type: String,
+            enum: ["Locked", "Open", "Submitted"],
+            default: "Locked",
+        }
     },
     { _id: true }
 );
@@ -28,7 +31,11 @@ const taskSchema = new mongoose.Schema(
     {
         title: { type: String, required: true },
         description: { type: String },
-        isTaskCompleted: { type: Boolean, default: false },
+        status: {
+            type: String,
+            enum: ["Locked", "Open", "Submitted"],
+            default: "Locked",
+        }
     },
     { _id: true }
 );
@@ -46,7 +53,11 @@ const moduleSchema = new mongoose.Schema(
         tasks: [taskSchema],
 
         order: { type: Number, default: 0 },
-        isModuleCompleted: { type: Boolean, default: false },
+        status: {
+            type: String,
+            enum: ["Locked", "Open", "Completed"],
+            default: "Locked",
+        }
     },
     { _id: true }
 );

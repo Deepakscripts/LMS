@@ -3,11 +3,11 @@ import { Loader2, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
 import { useQuizQuestions, useSubmitQuiz } from '../hooks';
 
-const QuizCard = ({ courseSlug, quizId, courseId, moduleId, onComplete }) => {
+const QuizCard = ({ courseSlug, quizId, courseId, moduleId, onComplete, isSubmitted: initialIsSubmitted }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [selectedOption, setSelectedOption] = useState(null);
-  const [showResults, setShowResults] = useState(false);
+  const [showResults, setShowResults] = useState(initialIsSubmitted || false);
   const [quizResults, setQuizResults] = useState(null);
 
   const { quiz, loading: loadingQuiz, error: quizError } = useQuizQuestions(courseSlug, quizId);
@@ -18,9 +18,36 @@ const QuizCard = ({ courseSlug, quizId, courseId, moduleId, onComplete }) => {
     setCurrentQuestionIndex(0);
     setAnswers({});
     setSelectedOption(null);
-    setShowResults(false);
+    
+    // If quiz is already submitted, show results
+    if (initialIsSubmitted) {
+      setShowResults(true);
+    } else {
+      setShowResults(false);
+    }
     setQuizResults(null);
-  }, [quizId]);
+  }, [quizId, initialIsSubmitted]);
+
+  // When quiz data loads and it's submitted, build results from the quiz data
+  useEffect(() => {
+    if (quiz && quiz.isSubmitted && quiz.submissionDetails) {
+      // Build results from submitted quiz data (questions with correct answers)
+      const results = quiz.questions.map(q => ({
+        questionId: q.id,
+        correctAnswer: q.correctAnswer,
+        isCorrect: null, // We don't have user's previous answers stored
+      }));
+      
+      setQuizResults({
+        score: quiz.submissionDetails.quizScore,
+        totalQuestions: quiz.submissionDetails.totalQuestions,
+        percentage: quiz.submissionDetails.percentage,
+        results: results,
+        isViewOnly: true, // Flag to indicate this is just viewing past results
+      });
+      setShowResults(true);
+    }
+  }, [quiz]);
 
   if (loadingQuiz) {
     return (
@@ -92,7 +119,9 @@ const QuizCard = ({ courseSlug, quizId, courseId, moduleId, onComplete }) => {
               <AlertCircle size={40} className="text-yellow-500" />
             )}
           </div>
-          <h2 className="text-2xl font-bold mb-2">Quiz Complete!</h2>
+          <h2 className="text-2xl font-bold mb-2">
+            {quizResults.isViewOnly ? 'Quiz Results' : 'Quiz Complete!'}
+          </h2>
           <p className="text-zinc-400">
             You scored{' '}
             <span className="text-white font-bold">
@@ -102,66 +131,83 @@ const QuizCard = ({ courseSlug, quizId, courseId, moduleId, onComplete }) => {
           </p>
         </div>
 
-        {/* Question Results */}
-        <div className="space-y-4 mb-8">
-          <h3 className="font-bold text-lg border-b border-zinc-800 pb-2">Review Answers</h3>
-          {quizResults.results.map((result, index) => {
-            const question = quiz.questions.find(q => q.id === result.questionId);
-            return (
-              <div
-                key={result.questionId}
-                className={`p-4 rounded-lg border ${
-                  result.isCorrect
-                    ? 'border-green-500/30 bg-green-900/10'
-                    : 'border-red-500/30 bg-red-900/10'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  {result.isCorrect ? (
-                    <CheckCircle size={20} className="text-green-500 mt-0.5 shrink-0" />
-                  ) : (
-                    <XCircle size={20} className="text-red-500 mt-0.5 shrink-0" />
-                  )}
-                  <div>
-                    <p className="font-medium mb-2">
-                      Q{index + 1}: {question?.question}
-                    </p>
-                    <p className="text-sm text-zinc-400">
-                      Your answer:{' '}
-                      <span className={result.isCorrect ? 'text-green-400' : 'text-red-400'}>
-                        {question?.options[result.userAnswer]}
-                      </span>
-                    </p>
-                    {!result.isCorrect && (
+        {/* Question Results - Only show if we have detailed results (not view-only) */}
+        {!quizResults.isViewOnly && quizResults.results && (
+          <div className="space-y-4 mb-8">
+            <h3 className="font-bold text-lg border-b border-zinc-800 pb-2">Review Answers</h3>
+            {quizResults.results.map((result, index) => {
+              const question = quiz.questions.find(q => q.id === result.questionId);
+              return (
+                <div
+                  key={result.questionId}
+                  className={`p-4 rounded-lg border ${
+                    result.isCorrect
+                      ? 'border-green-500/30 bg-green-900/10'
+                      : 'border-red-500/30 bg-red-900/10'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    {result.isCorrect ? (
+                      <CheckCircle size={20} className="text-green-500 mt-0.5 shrink-0" />
+                    ) : (
+                      <XCircle size={20} className="text-red-500 mt-0.5 shrink-0" />
+                    )}
+                    <div>
+                      <p className="font-medium mb-2">
+                        Q{index + 1}: {question?.question}
+                      </p>
                       <p className="text-sm text-zinc-400">
-                        Correct answer:{' '}
-                        <span className="text-green-400">
-                          {question?.options[result.correctAnswer]}
+                        Your answer:{' '}
+                        <span className={result.isCorrect ? 'text-green-400' : 'text-red-400'}>
+                          {question?.options[result.userAnswer]}
                         </span>
                       </p>
-                    )}
-                    {result.explanation && (
-                      <p className="text-sm text-zinc-500 mt-2 italic">{result.explanation}</p>
-                    )}
+                      {!result.isCorrect && (
+                        <p className="text-sm text-zinc-400">
+                          Correct answer:{' '}
+                          <span className="text-green-400">
+                            {question?.options[result.correctAnswer]}
+                          </span>
+                        </p>
+                      )}
+                      {result.explanation && (
+                        <p className="text-sm text-zinc-500 mt-2 italic">{result.explanation}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* View-only mode - show questions with correct answers */}
+        {quizResults.isViewOnly && quiz && (
+          <div className="space-y-4 mb-8">
+            <h3 className="font-bold text-lg border-b border-zinc-800 pb-2">Correct Answers</h3>
+            {quiz.questions.map((question, index) => (
+              <div
+                key={question.id}
+                className="p-4 rounded-lg border border-zinc-700 bg-zinc-800/50"
+              >
+                <div className="flex items-start gap-3">
+                  <CheckCircle size={20} className="text-blue-500 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-medium mb-2">
+                      Q{index + 1}: {question.question}
+                    </p>
+                    <p className="text-sm text-zinc-400">
+                      Correct answer:{' '}
+                      <span className="text-green-400">
+                        {question.options[question.correctAnswer]}
+                      </span>
+                    </p>
                   </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
-
-        <button
-          onClick={() => {
-            setCurrentQuestionIndex(0);
-            setAnswers({});
-            setSelectedOption(null);
-            setShowResults(false);
-            setQuizResults(null);
-          }}
-          className="w-full py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-bold text-white transition-colors"
-        >
-          Retake Quiz
-        </button>
+            ))}
+          </div>
+        )}
       </div>
     );
   }

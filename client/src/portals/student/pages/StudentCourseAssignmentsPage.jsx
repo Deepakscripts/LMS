@@ -7,6 +7,8 @@ import {
   CheckCircle,
   Clock,
   XCircle,
+  Lock,
+  ExternalLink,
 } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 
@@ -25,6 +27,15 @@ const StudentCourseAssignmentsPage = () => {
   };
 
   const getStatusBadge = assignment => {
+    // Check if module is locked first
+    if (assignment.status === 'Locked' || assignment.isModuleLocked) {
+      return (
+        <span className="flex items-center gap-1 text-zinc-500 text-sm">
+          <Lock size={14} />
+          Locked
+        </span>
+      );
+    }
     if (assignment.isCompleted) {
       return (
         <span className="flex items-center gap-1 text-green-400 text-sm">
@@ -33,8 +44,8 @@ const StudentCourseAssignmentsPage = () => {
         </span>
       );
     }
-    if (assignment.isSubmitted) {
-      if (assignment.status === 'graded') {
+    if (assignment.status === 'Submitted' || assignment.isSubmitted) {
+      if (assignment.submissionStatus === 'graded') {
         return (
           <span className="flex items-center gap-1 text-blue-400 text-sm">
             <CheckCircle size={14} />
@@ -50,9 +61,9 @@ const StudentCourseAssignmentsPage = () => {
       );
     }
     return (
-      <span className="flex items-center gap-1 text-zinc-400 text-sm">
-        <XCircle size={14} />
-        Pending
+      <span className="flex items-center gap-1 text-green-400 text-sm">
+        <CheckCircle size={14} className="opacity-50" />
+        Open
       </span>
     );
   };
@@ -110,43 +121,80 @@ const StudentCourseAssignmentsPage = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {assignments.map(assignment => (
-            <div
-              key={assignment.id}
-              className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition-colors"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <FileText size={20} className="text-green-400" />
-                    <h3 className="font-bold text-lg">{assignment.title}</h3>
-                    {getStatusBadge(assignment)}
+          {assignments.map(assignment => {
+            const isLocked = assignment.status === 'Locked' || assignment.isModuleLocked;
+            const isSubmitted = assignment.status === 'Submitted' || assignment.isSubmitted;
+            
+            return (
+              <div
+                key={assignment.id}
+                className={`bg-zinc-900 border rounded-xl p-6 transition-colors ${
+                  isLocked 
+                    ? 'border-zinc-800 opacity-60' 
+                    : 'border-zinc-800 hover:border-zinc-700'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      {isLocked ? (
+                        <Lock size={20} className="text-zinc-500" />
+                      ) : (
+                        <FileText size={20} className="text-green-400" />
+                      )}
+                      <h3 className="font-bold text-lg">{assignment.title}</h3>
+                      {getStatusBadge(assignment)}
+                    </div>
+                    <p className="text-zinc-500 text-sm mb-1">{assignment.moduleTitle}</p>
+                    {assignment.description && (
+                      <p className="text-zinc-400 text-sm line-clamp-2">{assignment.description}</p>
+                    )}
+                    {assignment.grade && (
+                      <p className="text-green-400 text-sm mt-2">Grade: {assignment.grade}</p>
+                    )}
+                    {/* Show submitted link for submitted assignments */}
+                    {isSubmitted && assignment.githubLink && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-zinc-500 text-sm">Submitted:</span>
+                        <a 
+                          href={assignment.githubLink} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
+                        >
+                          {assignment.githubLink.substring(0, 40)}...
+                          <ExternalLink size={12} />
+                        </a>
+                      </div>
+                    )}
                   </div>
-                  <p className="text-zinc-500 text-sm mb-1">{assignment.moduleTitle}</p>
-                  {assignment.description && (
-                    <p className="text-zinc-400 text-sm line-clamp-2">{assignment.description}</p>
-                  )}
-                  {assignment.grade && (
-                    <p className="text-green-400 text-sm mt-2">Grade: {assignment.grade}</p>
+                  {isLocked ? (
+                    <div className="px-6 py-2 bg-zinc-800 text-zinc-500 rounded-lg font-medium flex items-center gap-2 cursor-not-allowed">
+                      <Lock size={16} />
+                      Locked
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setSelectedAssignment(assignment)}
+                      className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                        assignment.isCompleted
+                          ? 'bg-zinc-700 hover:bg-zinc-600 text-white'
+                          : isSubmitted
+                            ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                            : 'bg-green-600 hover:bg-green-700 text-white'
+                      }`}
+                    >
+                      {assignment.isCompleted
+                        ? 'View Details'
+                        : isSubmitted
+                          ? 'View Submission'
+                          : 'Submit'}
+                    </button>
                   )}
                 </div>
-                <button
-                  onClick={() => setSelectedAssignment(assignment)}
-                  className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                    assignment.isCompleted
-                      ? 'bg-zinc-700 hover:bg-zinc-600 text-white'
-                      : 'bg-green-600 hover:bg-green-700 text-white'
-                  }`}
-                >
-                  {assignment.isCompleted
-                    ? 'View Details'
-                    : assignment.isSubmitted
-                      ? 'Update Submission'
-                      : 'Submit'}
-                </button>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

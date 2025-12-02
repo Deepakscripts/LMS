@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Loader2, AlertCircle, ClipboardList, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, ClipboardList, CheckCircle, Lock } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 
 import QuizCard from '../components/QuizCard';
@@ -13,6 +13,31 @@ const StudentCourseQuizzesPage = () => {
   const handleQuizComplete = () => {
     refetch();
     setSelectedQuiz(null);
+  };
+
+  const getStatusBadge = quiz => {
+    if (quiz.status === 'Locked' || quiz.isModuleLocked) {
+      return (
+        <span className="flex items-center gap-1 text-zinc-500 text-sm">
+          <Lock size={14} />
+          Locked
+        </span>
+      );
+    }
+    if (quiz.status === 'Submitted' || quiz.isCompleted) {
+      return (
+        <span className="flex items-center gap-1 text-green-400 text-sm">
+          <CheckCircle size={14} />
+          Completed
+        </span>
+      );
+    }
+    return (
+      <span className="flex items-center gap-1 text-blue-400 text-sm">
+        <CheckCircle size={14} className="opacity-50" />
+        Open
+      </span>
+    );
   };
 
   if (loading) {
@@ -53,6 +78,7 @@ const StudentCourseQuizzesPage = () => {
           courseId={courseId}
           moduleId={selectedQuiz.moduleId}
           onComplete={handleQuizComplete}
+          isSubmitted={selectedQuiz.status === 'Submitted' || selectedQuiz.isCompleted}
         />
       </div>
     );
@@ -69,37 +95,62 @@ const StudentCourseQuizzesPage = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {quizzes.map(quiz => (
-            <div
-              key={quiz.id}
-              className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 hover:border-zinc-700 transition-colors"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <ClipboardList size={20} className="text-blue-400" />
-                    <h3 className="font-bold text-lg">{quiz.title}</h3>
-                    {quiz.isCompleted && <CheckCircle size={18} className="text-green-500" />}
+          {quizzes.map(quiz => {
+            const isLocked = quiz.status === 'Locked' || quiz.isModuleLocked;
+            const isSubmitted = quiz.status === 'Submitted' || quiz.isCompleted;
+            
+            return (
+              <div
+                key={quiz.id}
+                className={`bg-zinc-900 border rounded-xl p-6 transition-colors ${
+                  isLocked 
+                    ? 'border-zinc-800 opacity-60' 
+                    : 'border-zinc-800 hover:border-zinc-700'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      {isLocked ? (
+                        <Lock size={20} className="text-zinc-500" />
+                      ) : (
+                        <ClipboardList size={20} className="text-blue-400" />
+                      )}
+                      <h3 className="font-bold text-lg">{quiz.title}</h3>
+                      {getStatusBadge(quiz)}
+                    </div>
+                    <p className="text-zinc-500 text-sm mb-1">{quiz.moduleTitle}</p>
+                    <p className="text-zinc-400 text-sm">
+                      {quiz.questionsCount} Questions
+                      {quiz.score && <span className="ml-4 text-green-400">Score: {quiz.score}</span>}
+                      {quiz.submissionDetails && (
+                        <span className="ml-4 text-green-400">
+                          ({quiz.submissionDetails.percentage}%)
+                        </span>
+                      )}
+                    </p>
                   </div>
-                  <p className="text-zinc-500 text-sm mb-1">{quiz.moduleTitle}</p>
-                  <p className="text-zinc-400 text-sm">
-                    {quiz.questionsCount} Questions
-                    {quiz.score && <span className="ml-4 text-green-400">Score: {quiz.score}</span>}
-                  </p>
+                  {isLocked ? (
+                    <div className="px-6 py-2 bg-zinc-800 text-zinc-500 rounded-lg font-medium flex items-center gap-2 cursor-not-allowed">
+                      <Lock size={16} />
+                      Locked
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setSelectedQuiz(quiz)}
+                      className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                        isSubmitted
+                          ? 'bg-zinc-700 hover:bg-zinc-600 text-white'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      }`}
+                    >
+                      {isSubmitted ? 'View Results' : 'Start Quiz'}
+                    </button>
+                  )}
                 </div>
-                <button
-                  onClick={() => setSelectedQuiz(quiz)}
-                  className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-                    quiz.isCompleted
-                      ? 'bg-zinc-700 hover:bg-zinc-600 text-white'
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
-                >
-                  {quiz.isCompleted ? 'Retake Quiz' : 'Start Quiz'}
-                </button>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

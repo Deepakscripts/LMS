@@ -77,6 +77,31 @@ export const getQuizzesByCourse = async (req, res) => {
 };
 
 /**
+ * Helper function to check if a module is completed
+ */
+const isModuleCompleted = (module, completedQuizzes, completedTasks) => {
+    const moduleQuizzes = module.quizzes || [];
+    const moduleTasks = module.tasks || [];
+
+    const moduleQuizIds = moduleQuizzes.map((q) => q._id.toString());
+    const moduleTaskIds = moduleTasks.map((t) => t._id.toString());
+
+    // If module has no quizzes and no tasks, it's considered complete
+    if (moduleQuizIds.length === 0 && moduleTaskIds.length === 0) {
+        return true;
+    }
+
+    const allQuizzesCompleted = moduleQuizIds.every((id) =>
+        completedQuizzes.includes(id)
+    );
+    const allTasksCompleted = moduleTaskIds.every((id) =>
+        completedTasks.includes(id)
+    );
+
+    return allQuizzesCompleted && allTasksCompleted;
+};
+
+/**
  * GET /api/student/courses/:slug/quizzes
  * Get quizzes for a specific course
  */
@@ -117,13 +142,40 @@ export const getCourseQuizzes = async (req, res) => {
         const completedQuizIds = enrollment.completedQuizzes.map((id) =>
             id.toString()
         );
+        const completedTaskIds = enrollment.completedTasks.map((id) =>
+            id.toString()
+        );
+
+        // Sort modules by order
+        const sortedModules = [...(course.modules || [])].sort(
+            (a, b) => (a.order || 0) - (b.order || 0)
+        );
+
+        // Calculate module completion status for lock logic
+        const moduleCompletionStatus = sortedModules.map((module) =>
+            isModuleCompleted(module, completedQuizIds, completedTaskIds)
+        );
 
         const quizzes = [];
-        course.modules.forEach((module) => {
+        sortedModules.forEach((module, moduleIndex) => {
+            // First module is always open, others depend on previous module completion
+            const isModuleLocked = moduleIndex > 0 && !moduleCompletionStatus[moduleIndex - 1];
+
             module.quizzes.forEach((quiz) => {
                 const submission = submissions.find(
                     (s) => s.quizId?.toString() === quiz._id.toString()
                 );
+                const isSubmitted = !!submission;
+
+                // Determine quiz status: Locked, Open, or Submitted
+                let status;
+                if (isModuleLocked) {
+                    status = "Locked";
+                } else if (isSubmitted) {
+                    status = "Submitted";
+                } else {
+                    status = "Open";
+                }
 
                 quizzes.push({
                     id: quiz._id,
@@ -132,9 +184,16 @@ export const getCourseQuizzes = async (req, res) => {
                     title: quiz.title,
                     questionsCount: quiz.questions.length,
                     isCompleted: completedQuizIds.includes(quiz._id.toString()),
+                    status,
+                    isModuleLocked,
                     score: submission
                         ? `${submission.quizScore}/${submission.totalQuestions}`
                         : null,
+                    submissionDetails: submission ? {
+                        quizScore: submission.quizScore,
+                        totalQuestions: submission.totalQuestions,
+                        percentage: Math.round((submission.quizScore / submission.totalQuestions) * 100),
+                    } : null,
                 });
             });
         });
@@ -189,16 +248,33 @@ export const getQuizQuestions = async (req, res) => {
             });
         }
 
-        // Find the quiz
+        const completedQuizIds = enrollment.completedQuizzes.map((id) =>
+            id.toString()
+        );
+        const completedTaskIds = enrollment.completedTasks.map((id) =>
+            id.toString()
+        );
+
+        // Sort modules by order
+        const sortedModules = [...(course.modules || [])].sort(
+            (a, b) => (a.order || 0) - (b.order || 0)
+        );
+
+        // Find the quiz and its module
         let quiz = null;
         let moduleTitle = "";
-        for (const module of course.modules) {
+        let moduleIndex = -1;
+        let foundModule = null;
+        for (let i = 0; i < sortedModules.length; i++) {
+            const module = sortedModules[i];
             const foundQuiz = module.quizzes.find(
                 (q) => q._id.toString() === quizId
             );
             if (foundQuiz) {
                 quiz = foundQuiz;
                 moduleTitle = module.title;
+                moduleIndex = i;
+                foundModule = module;
                 break;
             }
         }
@@ -211,12 +287,46 @@ export const getQuizQuestions = async (req, res) => {
             });
         }
 
-        // Return questions without correct answers
-        const questions = quiz.questions.map((q) => ({
-            id: q._id,
-            question: q.questionText,
-            options: q.options,
-        }));
+        // Check if module is locked (first module is always open)
+        let isModuleLocked = false;
+        if (moduleIndex > 0) {
+            const prevModule = sortedModules[moduleIndex - 1];
+            isModuleLocked = !isModuleCompleted(prevModule, completedQuizIds, completedTaskIds);
+        }
+
+        if (isModuleLocked) {
+            return res.status(403).json({
+                success: false,
+                message: "This quiz is locked. Complete the previous module first.",
+                code: ERROR_CODES.MODULE_LOCKED,
+            });
+        }
+
+        // Check if quiz is already submitted
+        const submission = await Submission.findOne({
+            student: req.userId,
+            course: course._id,
+            quizId: quizId,
+            type: "quiz",
+        });
+
+        const isSubmitted = !!submission;
+
+        // Return questions (without correct answers for open quiz, with results for submitted)
+        const questions = quiz.questions.map((q) => {
+            const baseQuestion = {
+                id: q._id,
+                question: q.questionText,
+                options: q.options,
+            };
+            
+            // If submitted, include correct answer for review
+            if (isSubmitted) {
+                baseQuestion.correctAnswer = q.correctAnswer;
+            }
+            
+            return baseQuestion;
+        });
 
         res.status(200).json({
             success: true,
@@ -225,6 +335,13 @@ export const getQuizQuestions = async (req, res) => {
                 moduleTitle,
                 questions,
                 totalQuestions: questions.length,
+                status: isSubmitted ? "Submitted" : "Open",
+                isSubmitted,
+                submissionDetails: submission ? {
+                    quizScore: submission.quizScore,
+                    totalQuestions: submission.totalQuestions,
+                    percentage: Math.round((submission.quizScore / submission.totalQuestions) * 100),
+                } : null,
             },
         });
     } catch (error) {
@@ -278,14 +395,29 @@ export const submitQuiz = async (req, res) => {
             });
         }
 
-        // Find quiz and calculate score
+        const completedQuizIds = enrollment.completedQuizzes.map((id) =>
+            id.toString()
+        );
+        const completedTaskIds = enrollment.completedTasks.map((id) =>
+            id.toString()
+        );
+
+        // Sort modules by order
+        const sortedModules = [...(course.modules || [])].sort(
+            (a, b) => (a.order || 0) - (b.order || 0)
+        );
+
+        // Find quiz and its module index
         let quiz = null;
-        for (const module of course.modules) {
+        let moduleIndex = -1;
+        for (let i = 0; i < sortedModules.length; i++) {
+            const module = sortedModules[i];
             const foundQuiz = module.quizzes.find(
                 (q) => q._id.toString() === quizId
             );
             if (foundQuiz) {
                 quiz = foundQuiz;
+                moduleIndex = i;
                 break;
             }
         }
@@ -295,6 +427,35 @@ export const submitQuiz = async (req, res) => {
                 success: false,
                 message: "Quiz not found",
                 code: ERROR_CODES.RESOURCE_NOT_FOUND,
+            });
+        }
+
+        // Check if module is locked (first module is always open)
+        if (moduleIndex > 0) {
+            const prevModule = sortedModules[moduleIndex - 1];
+            const isModuleLocked = !isModuleCompleted(prevModule, completedQuizIds, completedTaskIds);
+            if (isModuleLocked) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Cannot submit quiz. The module is locked. Complete the previous module first.",
+                    code: ERROR_CODES.MODULE_LOCKED,
+                });
+            }
+        }
+
+        // Check if quiz is already submitted (no retakes allowed)
+        const existingSubmission = await Submission.findOne({
+            student: req.userId,
+            course: courseId,
+            quizId: quizId,
+            type: "quiz",
+        });
+
+        if (existingSubmission) {
+            return res.status(403).json({
+                success: false,
+                message: "You have already submitted this quiz. Retakes are not allowed.",
+                code: ERROR_CODES.ALREADY_SUBMITTED,
             });
         }
 
@@ -314,64 +475,52 @@ export const submitQuiz = async (req, res) => {
             });
         });
 
-        // Create or update submission
-        const submission = await Submission.findOneAndUpdate(
-            {
-                student: req.userId,
-                course: courseId,
-                quizId: quizId,
-                type: "quiz",
-            },
-            {
-                enrollment: enrollment._id,
-                student: req.userId,
-                course: courseId,
-                moduleId: moduleId,
-                quizId: quizId,
-                type: "quiz",
-                quizScore: score,
-                totalQuestions: quiz.questions.length,
-                status: "graded",
-            },
-            { upsert: true, new: true }
+        // Create submission
+        const submission = await Submission.create({
+            enrollment: enrollment._id,
+            student: req.userId,
+            course: courseId,
+            moduleId: moduleId,
+            quizId: quizId,
+            type: "quiz",
+            quizScore: score,
+            totalQuestions: quiz.questions.length,
+            status: "graded",
+        });
+
+        // Mark quiz as completed and award XP
+        enrollment.completedQuizzes.push(quizId);
+
+        // Recalculate progress
+        const completedQuizzes = enrollment.completedQuizzes.map((id) =>
+            id.toString()
+        );
+        const completedTasks = enrollment.completedTasks.map((id) =>
+            id.toString()
+        );
+        enrollment.progressPercentage = calculateProgress(
+            course,
+            completedQuizzes,
+            completedTasks
         );
 
-        // Mark quiz as completed if not already and award XP
-        const isFirstCompletion = !enrollment.completedQuizzes.includes(quizId);
-        if (isFirstCompletion) {
-            enrollment.completedQuizzes.push(quizId);
-
-            // Recalculate progress
-            const completedQuizzes = enrollment.completedQuizzes.map((id) =>
-                id.toString()
-            );
-            const completedTasks = enrollment.completedTasks.map((id) =>
-                id.toString()
-            );
-            enrollment.progressPercentage = calculateProgress(
-                course,
-                completedQuizzes,
-                completedTasks
-            );
-
-            // Check if course is completed
-            if (enrollment.progressPercentage === 100) {
-                enrollment.isCompleted = true;
-                enrollment.completionDate = new Date();
-            }
-
-            await enrollment.save();
-
-            // Update user stats - only on first completion
-            await Student.findByIdAndUpdate(req.userId, {
-                $inc: { xp: score * 10, quizzesCompleted: 1 },
-            });
-
-            // Update leaderboard with XP and quiz completion - only on first completion
-            await updateLeaderboard(req.userId, courseId, score * 10, {
-                quizzesCompleted: 1,
-            });
+        // Check if course is completed
+        if (enrollment.progressPercentage === 100) {
+            enrollment.isCompleted = true;
+            enrollment.completionDate = new Date();
         }
+
+        await enrollment.save();
+
+        // Update user stats
+        await Student.findByIdAndUpdate(req.userId, {
+            $inc: { xp: score * 10, quizzesCompleted: 1 },
+        });
+
+        // Update leaderboard with XP and quiz completion
+        await updateLeaderboard(req.userId, courseId, score * 10, {
+            quizzesCompleted: 1,
+        });
 
         res.status(200).json({
             success: true,
@@ -380,11 +529,8 @@ export const submitQuiz = async (req, res) => {
                 totalQuestions: quiz.questions.length,
                 percentage: Math.round((score / quiz.questions.length) * 100),
                 results,
-                isFirstCompletion,
             },
-            message: isFirstCompletion
-                ? `Quiz submitted! You scored ${score}/${quiz.questions.length} and earned ${score * 10} XP!`
-                : `Quiz submitted! You scored ${score}/${quiz.questions.length}`,
+            message: `Quiz submitted! You scored ${score}/${quiz.questions.length} and earned ${score * 10} XP!`,
         });
     } catch (error) {
         console.error("Submit quiz error:", error);
