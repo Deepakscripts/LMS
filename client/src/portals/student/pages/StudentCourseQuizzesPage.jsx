@@ -98,14 +98,12 @@ const StudentCourseQuizzesPage = () => {
           {quizzes.map(quiz => {
             const isLocked = quiz.status === 'Locked' || quiz.isModuleLocked;
             const isSubmitted = quiz.status === 'Submitted' || quiz.isCompleted;
-            
+
             return (
               <div
                 key={quiz.id}
                 className={`bg-zinc-900 border rounded-xl p-6 transition-colors ${
-                  isLocked 
-                    ? 'border-zinc-800 opacity-60' 
-                    : 'border-zinc-800 hover:border-zinc-700'
+                  isLocked ? 'border-zinc-800 opacity-60' : 'border-zinc-800 hover:border-zinc-700'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -122,7 +120,9 @@ const StudentCourseQuizzesPage = () => {
                     <p className="text-zinc-500 text-sm mb-1">{quiz.moduleTitle}</p>
                     <p className="text-zinc-400 text-sm">
                       {quiz.questionsCount} Questions
-                      {quiz.score && <span className="ml-4 text-green-400">Score: {quiz.score}</span>}
+                      {quiz.score && (
+                        <span className="ml-4 text-green-400">Score: {quiz.score}</span>
+                      )}
                       {quiz.submissionDetails && (
                         <span className="ml-4 text-green-400">
                           ({quiz.submissionDetails.percentage}%)

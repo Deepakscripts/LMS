@@ -1,4 +1,4 @@
-import { Course, Enrollment } from "../../models/index.js";
+import { Course, Enrollment, Submission } from "../../models/index.js";
 import { ERROR_CODES } from "../../middlewares/globalErrorHandler.js";
 
 /**
@@ -157,6 +157,13 @@ export const getCourseDetails = async (req, res) => {
             });
         }
 
+        // Get assignment submissions for this course
+        const submissions = await Submission.find({
+            student: req.userId,
+            course: course._id,
+            type: "assignment",
+        });
+
         const completedQuizzes = (enrollment.completedQuizzes || []).map((id) =>
             id.toString()
         );
@@ -225,12 +232,24 @@ export const getCourseDetails = async (req, res) => {
                     questionsCount: quiz.questions?.length || 0,
                     isCompleted: completedQuizzes.includes(quiz._id.toString()),
                 })),
-                tasks: (module.tasks || []).map((task) => ({
-                    id: task._id,
-                    title: task.title,
-                    description: task.description,
-                    isCompleted: completedTasks.includes(task._id.toString()),
-                })),
+                tasks: (module.tasks || []).map((task) => {
+                    const submission = submissions.find(
+                        (s) => s.taskId?.toString() === task._id.toString()
+                    );
+                    const isSubmitted = !!submission;
+                    return {
+                        id: task._id,
+                        title: task.title,
+                        description: task.description,
+                        isCompleted: completedTasks.includes(task._id.toString()),
+                        isSubmitted,
+                        status: isSubmitted ? "Submitted" : "Open",
+                        githubLink: submission?.githubLink,
+                        submissionStatus: submission?.status || "pending",
+                        grade: submission?.grade,
+                        feedback: submission?.feedback,
+                    };
+                }),
             };
         });
 

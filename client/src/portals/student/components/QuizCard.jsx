@@ -3,7 +3,14 @@ import { Loader2, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
 import { useQuizQuestions, useSubmitQuiz } from '../hooks';
 
-const QuizCard = ({ courseSlug, quizId, courseId, moduleId, onComplete, isSubmitted: initialIsSubmitted }) => {
+const QuizCard = ({
+  courseSlug,
+  quizId,
+  courseId,
+  moduleId,
+  onComplete,
+  isSubmitted: initialIsSubmitted,
+}) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [selectedOption, setSelectedOption] = useState(null);
@@ -18,7 +25,7 @@ const QuizCard = ({ courseSlug, quizId, courseId, moduleId, onComplete, isSubmit
     setCurrentQuestionIndex(0);
     setAnswers({});
     setSelectedOption(null);
-    
+
     // If quiz is already submitted, show results
     if (initialIsSubmitted) {
       setShowResults(true);
@@ -37,7 +44,7 @@ const QuizCard = ({ courseSlug, quizId, courseId, moduleId, onComplete, isSubmit
         correctAnswer: q.correctAnswer,
         isCorrect: null, // We don't have user's previous answers stored
       }));
-      
+
       setQuizResults({
         score: quiz.submissionDetails.quizScore,
         totalQuestions: quiz.submissionDetails.totalQuestions,

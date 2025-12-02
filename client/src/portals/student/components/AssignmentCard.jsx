@@ -8,7 +8,9 @@ const AssignmentCard = ({ task, courseId, moduleId, onComplete }) => {
   // Handle both old 'isSubmitted' and new 'status' field
   const taskIsSubmitted = task?.status === 'Submitted' || task?.isSubmitted || false;
   const [isSubmitted, setIsSubmitted] = useState(taskIsSubmitted);
-  const [submissionStatus, setSubmissionStatus] = useState(task?.submissionStatus || task?.status || 'pending');
+  const [submissionStatus, setSubmissionStatus] = useState(
+    task?.submissionStatus || task?.status || 'pending',
+  );
 
   const { submit, loading: submitting, error: submitError } = useSubmitAssignment();
 

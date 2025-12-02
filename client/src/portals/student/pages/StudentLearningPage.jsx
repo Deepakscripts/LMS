@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 
 import QuizCard from '../components/QuizCard';
 import AssignmentCard from '../components/AssignmentCard';
+import CapstoneCard from '../components/CapstoneCard';
 import { useCourseDetails, useMarkModuleAccessed, useCourseProgress } from '../hooks';
 
 const StudentLearningPage = () => {
@@ -63,15 +64,6 @@ const StudentLearningPage = () => {
     } catch (err) {
       // Silently fail - this is just for tracking
       console.error('Failed to track module access:', err);
-    }
-  };
-
-  const handleContentClick = (type, data, module) => {
-    setActiveContent({ type, data, moduleId: module._id || module.id });
-    handleModuleAccess(module._id || module.id);
-
-    if (isMobile) {
-      setbar(false);
     }
   };
 
@@ -122,10 +114,15 @@ const StudentLearningPage = () => {
   // Calculate overall progress
   const overallProgress = progress?.progressPercentage || course.progress || 0;
 
+  // Check if all modules are completed for capstone unlock
+  const allModulesCompleted = course.modules?.every(module => module.isCompleted) ?? false;
+
   return (
     <div className="flex h-full relative bg-black text-white font-sans selection:bg-blue-500 selection:text-white overflow-hidden">
       {/* Main Content Area */}
-      <div className="grow overflow-y-auto p-6 md:p-10">
+      <div
+        className={`grow overflow-y-auto p-6 md:p-10 transition-all duration-300 ${bar ? 'mr-0 lg:mr-0' : 'mr-0'}`}
+      >
         {/* No selection state */}
         {!activeContent && (
           <div className="container mx-auto flex flex-col items-center justify-center h-full text-zinc-500">
@@ -159,6 +156,47 @@ const StudentLearningPage = () => {
                 <ExternalLink size={18} />
                 Open Reading Material
               </a>
+            </div>
+          </div>
+        )}
+
+        {/* All Resources Content */}
+        {activeContent?.type === 'allResources' && (
+          <div className="container mx-auto space-y-6">
+            <div className="flex items-center gap-3 mb-6">
+              <FileText size={32} className="text-blue-400" />
+              <div>
+                <h2 className="text-2xl font-bold">Resources</h2>
+                <p className="text-zinc-400 text-sm">{activeContent.moduleTitle}</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              {activeContent.data.map((url, idx) => (
+                <a
+                  key={idx}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 hover:border-blue-500/50 transition-all group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                      <FileText size={24} className="text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-white group-hover:text-blue-400 transition-colors">
+                        Reading Material {idx + 1}
+                      </h3>
+                      <p className="text-zinc-500 text-sm truncate">{url}</p>
+                    </div>
+                    <ExternalLink
+                      size={20}
+                      className="text-zinc-500 group-hover:text-blue-400 transition-colors"
+                    />
+                  </div>
+                </a>
+              ))}
             </div>
           </div>
         )}
@@ -204,6 +242,66 @@ const StudentLearningPage = () => {
           </div>
         )}
 
+        {/* All Videos Content */}
+        {activeContent?.type === 'allVideos' && (
+          <div className="container mx-auto space-y-6">
+            <div className="flex items-center gap-3 mb-6">
+              <Video size={32} className="text-purple-400" />
+              <div>
+                <h2 className="text-2xl font-bold">Videos</h2>
+                <p className="text-zinc-400 text-sm">{activeContent.moduleTitle}</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              {activeContent.data.map((url, idx) => {
+                const isYoutube = url.includes('youtube.com') || url.includes('youtu.be');
+                return (
+                  <div
+                    key={idx}
+                    className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden"
+                  >
+                    {isYoutube ? (
+                      <div className="aspect-video">
+                        <iframe
+                          src={url
+                            .replace('watch?v=', 'embed/')
+                            .replace('youtu.be/', 'youtube.com/embed/')}
+                          title={`Video ${idx + 1}`}
+                          className="w-full h-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-6 flex items-center gap-4 hover:bg-zinc-800/50 transition-colors group"
+                      >
+                        <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                          <Video size={24} className="text-purple-400" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-white group-hover:text-purple-400 transition-colors">
+                            Video {idx + 1}
+                          </h3>
+                          <p className="text-zinc-500 text-sm truncate">{url}</p>
+                        </div>
+                        <ExternalLink
+                          size={20}
+                          className="text-zinc-500 group-hover:text-purple-400 transition-colors"
+                        />
+                      </a>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Quiz Content */}
         {activeContent?.type === 'quiz' && (
           <QuizCard
@@ -215,6 +313,63 @@ const StudentLearningPage = () => {
           />
         )}
 
+        {/* All Quizzes Content */}
+        {activeContent?.type === 'allQuizzes' && (
+          <div className="container mx-auto space-y-6">
+            <div className="flex items-center gap-3 mb-6">
+              <Notebook size={32} className="text-green-400" />
+              <div>
+                <h2 className="text-2xl font-bold">Quizzes</h2>
+                <p className="text-zinc-400 text-sm">{activeContent.moduleTitle}</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              {activeContent.data.map(quiz => {
+                const quizId = quiz._id || quiz.id;
+                return (
+                  <button
+                    key={quizId}
+                    onClick={() =>
+                      setActiveContent({
+                        type: 'quiz',
+                        data: quiz,
+                        moduleId: activeContent.moduleId,
+                      })
+                    }
+                    className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 hover:border-green-500/50 transition-all text-left group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center">
+                        <Notebook size={24} className="text-green-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-white group-hover:text-green-400 transition-colors">
+                          {quiz.title}
+                        </h3>
+                        <p className="text-zinc-500 text-sm">
+                          {quiz.questionsCount || 0} questions
+                        </p>
+                      </div>
+                      {quiz.isCompleted ? (
+                        <div className="flex items-center gap-2 text-green-400">
+                          <CheckCircle size={20} />
+                          <span className="text-sm font-medium">Completed</span>
+                        </div>
+                      ) : (
+                        <ChevronRight
+                          size={20}
+                          className="text-zinc-500 group-hover:text-green-400 transition-colors"
+                        />
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Task/Assignment Content */}
         {activeContent?.type === 'task' && (
           <AssignmentCard
@@ -224,315 +379,461 @@ const StudentLearningPage = () => {
             onComplete={handleTaskComplete}
           />
         )}
+
+        {/* All Tasks Content */}
+        {activeContent?.type === 'allTasks' && (
+          <div className="container mx-auto space-y-6">
+            <div className="flex items-center gap-3 mb-6">
+              <UploadCloud size={32} className="text-yellow-400" />
+              <div>
+                <h2 className="text-2xl font-bold">Assignments</h2>
+                <p className="text-zinc-400 text-sm">{activeContent.moduleTitle}</p>
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              {activeContent.data.map(task => {
+                const taskId = task._id || task.id;
+                const isSubmitted = task.status === 'Submitted' || task.isSubmitted;
+                return (
+                  <button
+                    key={taskId}
+                    onClick={() =>
+                      setActiveContent({
+                        type: 'task',
+                        data: task,
+                        moduleId: activeContent.moduleId,
+                      })
+                    }
+                    className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 hover:border-yellow-500/50 transition-all text-left group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+                        <UploadCloud size={24} className="text-yellow-400" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-white group-hover:text-yellow-400 transition-colors">
+                          {task.title}
+                        </h3>
+                        {task.description && (
+                          <p className="text-zinc-500 text-sm line-clamp-1">{task.description}</p>
+                        )}
+                        {/* Show submitted link for submitted tasks */}
+                        {isSubmitted && task.githubLink && (
+                          <div
+                            className="mt-2 flex items-center gap-2"
+                            onClick={e => e.stopPropagation()}
+                          >
+                            <span className="text-zinc-500 text-sm">Submitted:</span>
+                            <a
+                              href={task.githubLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
+                            >
+                              {task.githubLink.length > 40
+                                ? `${task.githubLink.substring(0, 40)}...`
+                                : task.githubLink}
+                              <ExternalLink size={12} />
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                      {task.isCompleted ? (
+                        <div className="flex items-center gap-2 text-green-400">
+                          <CheckCircle size={20} />
+                          <span className="text-sm font-medium">Completed</span>
+                        </div>
+                      ) : isSubmitted ? (
+                        <div className="flex items-center gap-2 text-yellow-400">
+                          <CheckCircle size={20} />
+                          <span className="text-sm font-medium">Submitted</span>
+                        </div>
+                      ) : (
+                        <ChevronRight
+                          size={20}
+                          className="text-zinc-500 group-hover:text-yellow-400 transition-colors"
+                        />
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Capstone Project Content */}
+        {activeContent?.type === 'capstone' && (
+          <CapstoneCard
+            capstone={activeContent.data}
+            courseId={course._id || course.id}
+            allModulesCompleted={allModulesCompleted}
+            onComplete={() => {
+              refetch();
+              refetchProgress();
+              toast.success('Capstone project submitted!');
+            }}
+          />
+        )}
       </div>
 
       {/* Sidebar Toggle Button */}
-      <div
-        className={`absolute transition-all top-4 rounded-s-full overflow-hidden border-2 border-e-0 border-zinc-700 ${bar === true ? 'right-80' : 'right-0'}`}
+      <button
+        onClick={() => setbar(!bar)}
+        className={`fixed z-40 top-24 p-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-l-full shadow-lg transition-all duration-300 ${
+          bar ? 'right-80' : 'right-0'
+        }`}
       >
-        <button className="p-4 bg-zinc-900" onClick={() => setbar(!bar)}>
-          {bar && <ChevronRight size={20} />}
-          {!bar && <ChevronLeft size={20} />}
-        </button>
-      </div>
+        {bar ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+      </button>
+
+      {/* Sidebar Overlay for Mobile */}
+      {bar && isMobile && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden"
+          onClick={() => setbar(false)}
+        />
+      )}
 
       {/* Sidebar */}
       <div
-        className={`z-20 absolute lg:static right-0 shrink-0 h-[calc(100vh-5rem)] overflow-auto transition-all bg-zinc-900 border border-zinc-800 ${bar ? 'w-80' : 'w-0'}`}
+        className={`fixed lg:static right-0 top-0 z-40 h-full lg:h-[calc(100vh-5rem)] shrink-0 overflow-hidden transition-all duration-300 ease-in-out ${
+          bar ? 'w-80' : 'w-0'
+        }`}
       >
-        {/* Course Header */}
-        <div className="p-6 border-b border-zinc-800 bg-zinc-900 flex justify-between items-center sticky top-0">
-          <div>
+        <div className="w-80 h-full bg-zinc-900/95 backdrop-blur-md border-l border-zinc-800 flex flex-col">
+          {/* Course Header */}
+          <div className="p-6 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur-sm sticky top-0 z-10">
             <h2 className="font-bold text-lg leading-tight line-clamp-1">{course.title}</h2>
-            <div className="flex items-center gap-2 mt-2 text-xs text-zinc-400">
-              <div className="flex-1 h-1.5 bg-zinc-700 rounded-full w-24 overflow-hidden">
-                <div className="h-full bg-green-500" style={{ width: `${overallProgress}%` }}></div>
+            <div className="flex items-center gap-2 mt-3 text-xs text-zinc-400">
+              <div className="flex-1 h-2 bg-zinc-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-linear-to-r from-green-500 to-emerald-400 transition-all duration-500"
+                  style={{ width: `${overallProgress}%` }}
+                />
               </div>
-              <span>{overallProgress}% Done</span>
+              <span className="font-medium text-zinc-300">{overallProgress}%</span>
             </div>
           </div>
-        </div>
 
-        {/* Modules List */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {course.modules?.map((module, moduleIndex) => {
-            const moduleId = module._id || module.id;
-            const isLocked = module.isLocked;
-            const isModuleCompleted = module.isCompleted;
+          {/* Modules List */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {course.modules?.map((module, moduleIndex) => {
+              const moduleId = module._id || module.id;
+              const isLocked = module.isLocked;
+              const isModuleCompleted = module.isCompleted;
 
-            return (
-              <div
-                key={moduleId}
-                className={`border rounded-xl overflow-hidden transition-all ${
-                  isLocked
-                    ? 'border-zinc-800 bg-zinc-900/30 opacity-60'
-                    : isModuleCompleted
-                      ? 'border-green-500/30 bg-green-900/10'
-                      : 'border-zinc-700 bg-black/20'
-                }`}
-              >
-                {/* Module Header */}
-                <button
-                  onClick={() =>
-                    !isLocked && setActiveModule(activeModule === moduleId ? null : moduleId)
-                  }
-                  disabled={isLocked}
-                  className={`w-full p-4 flex items-center justify-between text-left transition-colors ${
-                    isLocked ? 'cursor-not-allowed' : 'hover:bg-zinc-800/50'
+              return (
+                <div
+                  key={moduleId}
+                  className={`border rounded-xl overflow-hidden transition-all duration-200 ${
+                    isLocked
+                      ? 'border-zinc-800 bg-zinc-900/50'
+                      : isModuleCompleted
+                        ? 'border-green-500/30 bg-green-950/30'
+                        : 'border-zinc-700 bg-zinc-800/30'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    {isLocked ? (
-                      <Lock size={16} className="text-zinc-500" />
-                    ) : isModuleCompleted ? (
-                      <CheckCircle size={16} className="text-green-500" />
-                    ) : (
-                      <div className="w-4 h-4 rounded-full border-2 border-blue-500 flex items-center justify-center text-xs">
-                        {moduleIndex + 1}
-                      </div>
-                    )}
-                    <div>
-                      <span
-                        className={`font-bold text-sm block ${isLocked ? 'text-zinc-500' : 'text-white'}`}
-                      >
-                        {module.title}
-                      </span>
-                      <div className="flex items-center gap-2 text-xs text-zinc-500">
-                        {module.maxTimelineInDays && <span>{module.maxTimelineInDays} days</span>}
+                  {/* Module Header */}
+                  <button
+                    onClick={() =>
+                      !isLocked && setActiveModule(activeModule === moduleId ? null : moduleId)
+                    }
+                    disabled={isLocked}
+                    className={`w-full p-4 flex items-center justify-between text-left transition-colors ${
+                      isLocked
+                        ? 'cursor-not-allowed opacity-50'
+                        : 'hover:bg-zinc-800/50 active:bg-zinc-800/70'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {isLocked ? (
+                        <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center">
+                          <Lock size={12} className="text-zinc-500" />
+                        </div>
+                      ) : isModuleCompleted ? (
+                        <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center">
+                          <CheckCircle size={14} className="text-green-500" />
+                        </div>
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-blue-500/20 border border-blue-500/50 flex items-center justify-center text-xs font-bold text-blue-400">
+                          {moduleIndex + 1}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <span
+                          className={`font-semibold text-sm block truncate ${
+                            isLocked ? 'text-zinc-500' : 'text-white'
+                          }`}
+                        >
+                          {module.title}
+                        </span>
                         {isLocked && (
-                          <span className="text-yellow-500">
-                            • Complete previous module to unlock
+                          <span className="text-xs text-yellow-500/80">
+                            Complete previous module
+                          </span>
+                        )}
+                        {!isLocked && module.maxTimelineInDays && (
+                          <span className="text-xs text-zinc-500">
+                            {module.maxTimelineInDays} days
                           </span>
                         )}
                       </div>
                     </div>
-                  </div>
-                  {!isLocked &&
-                    (activeModule === moduleId ? (
-                      <ChevronUp size={16} />
-                    ) : (
-                      <ChevronDown size={16} />
-                    ))}
-                  {isLocked && (
-                    <div className="flex items-center gap-2 text-xs text-zinc-500">
-                      <span>{module.quizzesCount || 0} quizzes</span>
-                      <span>•</span>
-                      <span>{module.tasksCount || 0} tasks</span>
+                    {!isLocked && (
+                      <div className="shrink-0 ml-2">
+                        {activeModule === moduleId ? (
+                          <ChevronUp size={16} className="text-zinc-400" />
+                        ) : (
+                          <ChevronDown size={16} className="text-zinc-400" />
+                        )}
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Module Content - Only show for unlocked modules */}
+                  {!isLocked && activeModule === moduleId && (
+                    <div className="bg-zinc-950/50 border-t border-zinc-800">
+                      {/* Content Type Buttons */}
+                      {(() => {
+                        const hasResources = module.textLinks?.length > 0;
+                        const hasVideos = module.videoLinks?.length > 0;
+                        const hasQuizzes = module.quizzes?.length > 0;
+                        const hasTasks = module.tasks?.length > 0;
+
+                        const contentTypes = [];
+                        if (hasResources)
+                          contentTypes.push({
+                            id: 'resources',
+                            label: 'Resources',
+                            icon: FileText,
+                            count: module.textLinks.length,
+                          });
+                        if (hasVideos)
+                          contentTypes.push({
+                            id: 'videos',
+                            label: 'Videos',
+                            icon: Video,
+                            count: module.videoLinks.length,
+                          });
+                        if (hasQuizzes)
+                          contentTypes.push({
+                            id: 'quizzes',
+                            label: 'Quizzes',
+                            icon: Notebook,
+                            count: module.quizzes.length,
+                          });
+                        if (hasTasks)
+                          contentTypes.push({
+                            id: 'tasks',
+                            label: 'Tasks',
+                            icon: UploadCloud,
+                            count: module.tasks.length,
+                          });
+
+                        if (contentTypes.length === 0) {
+                          return (
+                            <div className="p-4 text-center text-zinc-500 text-sm">
+                              No content available
+                            </div>
+                          );
+                        }
+
+                        const handleTypeClick = typeId => {
+                          handleModuleAccess(moduleId);
+                          if (isMobile) setbar(false);
+
+                          if (typeId === 'resources') {
+                            setActiveContent({
+                              type: 'allResources',
+                              data: module.textLinks,
+                              moduleId,
+                              moduleTitle: module.title,
+                            });
+                          } else if (typeId === 'videos') {
+                            setActiveContent({
+                              type: 'allVideos',
+                              data: module.videoLinks,
+                              moduleId,
+                              moduleTitle: module.title,
+                            });
+                          } else if (typeId === 'quizzes') {
+                            // Directly open the quiz (only one per module)
+                            const quiz = module.quizzes[0];
+                            if (quiz) {
+                              setActiveContent({
+                                type: 'quiz',
+                                data: quiz,
+                                moduleId,
+                              });
+                            }
+                          } else if (typeId === 'tasks') {
+                            // Directly open the task (only one per module)
+                            const task = module.tasks[0];
+                            if (task) {
+                              setActiveContent({
+                                type: 'task',
+                                data: task,
+                                moduleId,
+                              });
+                            }
+                          }
+                        };
+
+                        return (
+                          <>
+                            {/* Content Type Buttons */}
+                            <div className="p-2 space-y-1">
+                              {contentTypes.map(type => {
+                                const Icon = type.icon;
+                                const isActive =
+                                  (type.id === 'resources' &&
+                                    activeContent?.type === 'allResources' &&
+                                    activeContent?.moduleId === moduleId) ||
+                                  (type.id === 'videos' &&
+                                    activeContent?.type === 'allVideos' &&
+                                    activeContent?.moduleId === moduleId) ||
+                                  (type.id === 'quizzes' &&
+                                    activeContent?.type === 'quiz' &&
+                                    activeContent?.moduleId === moduleId) ||
+                                  (type.id === 'tasks' &&
+                                    activeContent?.type === 'task' &&
+                                    activeContent?.moduleId === moduleId);
+
+                                // Check if this type has multiple items (show count only for resources/videos)
+                                const showCount = type.id === 'resources' || type.id === 'videos';
+
+                                return (
+                                  <button
+                                    key={type.id}
+                                    onClick={() => handleTypeClick(type.id)}
+                                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                                      isActive
+                                        ? 'text-blue-400 bg-blue-500/10 border border-blue-500/30'
+                                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 border border-transparent'
+                                    }`}
+                                  >
+                                    <Icon size={16} />
+                                    <span className="flex-1 text-left">{type.label}</span>
+                                    {showCount && (
+                                      <span
+                                        className={`text-xs px-2 py-0.5 rounded-full ${
+                                          isActive
+                                            ? 'bg-blue-500/20 text-blue-400'
+                                            : 'bg-zinc-800 text-zinc-500'
+                                        }`}
+                                      >
+                                        {type.count}
+                                      </span>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            {/* Module Completion Status */}
+                            {isModuleCompleted && (
+                              <div className="px-3 pb-3">
+                                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-2.5 flex items-center justify-center gap-2">
+                                  <CheckCircle size={14} className="text-green-500" />
+                                  <span className="text-xs text-green-400 font-medium">
+                                    Module Completed!
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   )}
-                </button>
+                </div>
+              );
+            })}
 
-                {/* Module Content - Only show for unlocked modules */}
-                {!isLocked && activeModule === moduleId && (
-                  <div className="bg-zinc-900/50 border-t border-zinc-800">
-                    {/* Text Links */}
-                    {module.textLinks?.length > 0 && (
-                      <div className="px-3 pt-3">
-                        <p className="text-xs text-zinc-500 uppercase tracking-wide mb-2 pl-8">
-                          Reading Materials
-                        </p>
-                        {module.textLinks.map((url, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() =>
-                              handleContentClick(
-                                'textLink',
-                                { url, title: `Reading ${idx + 1}` },
-                                module,
-                              )
-                            }
-                            className={`w-full p-3 pl-11 flex items-center gap-3 text-sm hover:bg-blue-900/20 transition-colors border-l-2 ${
-                              activeContent?.type === 'textLink' && activeContent?.data?.url === url
-                                ? 'border-blue-500 bg-blue-900/10 text-blue-400'
-                                : 'border-transparent text-zinc-400'
-                            }`}
-                          >
-                            <FileText size={14} />
-                            <span className="truncate">Reading Material {idx + 1}</span>
-                            <ExternalLink size={12} className="ml-auto opacity-50" />
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Video Links */}
-                    {module.videoLinks?.length > 0 && (
-                      <div className="px-3 pt-3">
-                        <p className="text-xs text-zinc-500 uppercase tracking-wide mb-2 pl-8">
-                          Video Lessons
-                        </p>
-                        {module.videoLinks.map((url, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() =>
-                              handleContentClick(
-                                'videoLink',
-                                { url, title: `Video ${idx + 1}` },
-                                module,
-                              )
-                            }
-                            className={`w-full p-3 pl-11 flex items-center gap-3 text-sm hover:bg-blue-900/20 transition-colors border-l-2 ${
-                              activeContent?.type === 'videoLink' &&
-                              activeContent?.data?.url === url
-                                ? 'border-blue-500 bg-blue-900/10 text-blue-400'
-                                : 'border-transparent text-zinc-400'
-                            }`}
-                          >
-                            <Video size={14} />
-                            <span className="truncate">Video Lesson {idx + 1}</span>
-                            <ExternalLink size={12} className="ml-auto opacity-50" />
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Quizzes */}
-                    {module.quizzes?.length > 0 && (
-                      <div className="px-3 pt-3">
-                        <p className="text-xs text-zinc-500 uppercase tracking-wide mb-2 pl-8">
-                          Quizzes
-                        </p>
-                        {module.quizzes.map(quiz => {
-                          const quizId = quiz._id || quiz.id;
-                          return (
-                            <button
-                              key={quizId}
-                              onClick={() => handleContentClick('quiz', quiz, module)}
-                              className={`w-full p-3 pl-11 flex items-center gap-3 text-sm hover:bg-blue-900/20 transition-colors border-l-2 ${
-                                activeContent?.type === 'quiz' &&
-                                (activeContent?.data?._id || activeContent?.data?.id) === quizId
-                                  ? 'border-blue-500 bg-blue-900/10 text-blue-400'
-                                  : 'border-transparent text-zinc-400'
-                              }`}
-                            >
-                              <Notebook size={14} />
-                              <span className="truncate">{quiz.title}</span>
-                              {quiz.isCompleted && (
-                                <CheckCircle size={12} className="ml-auto text-green-500" />
-                              )}
-                              {quiz.questionsCount && !quiz.isCompleted && (
-                                <span className="ml-auto text-xs text-zinc-500">
-                                  {quiz.questionsCount} Q
-                                </span>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {/* Tasks/Assignments */}
-                    {module.tasks?.length > 0 && (
-                      <div className="px-3 pt-3 pb-3">
-                        <p className="text-xs text-zinc-500 uppercase tracking-wide mb-2 pl-8">
-                          Tasks & Assignments
-                        </p>
-                        {module.tasks.map(task => {
-                          const taskId = task._id || task.id;
-                          return (
-                            <button
-                              key={taskId}
-                              onClick={() => handleContentClick('task', task, module)}
-                              className={`w-full p-3 pl-11 flex items-center gap-3 text-sm hover:bg-blue-900/20 transition-colors border-l-2 ${
-                                activeContent?.type === 'task' &&
-                                (activeContent?.data?._id || activeContent?.data?.id) === taskId
-                                  ? 'border-blue-500 bg-blue-900/10 text-blue-400'
-                                  : 'border-transparent text-zinc-400'
-                              }`}
-                            >
-                              <UploadCloud size={14} />
-                              <span className="truncate">{task.title}</span>
-                              {task.isCompleted && (
-                                <CheckCircle size={12} className="ml-auto text-green-500" />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {/* Module Completion Status */}
-                    {isModuleCompleted && (
-                      <div className="px-3 pb-3">
-                        <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-3 flex items-center gap-2">
-                          <CheckCircle size={16} className="text-green-500" />
-                          <span className="text-sm text-green-400">Module Completed!</span>
-                        </div>
-                      </div>
+            {/* Capstone Project - Before Certificate */}
+            {course.capstone?.title && (
+              <button
+                onClick={() => {
+                  if (allModulesCompleted) {
+                    setActiveContent({
+                      type: 'capstone',
+                      data: course.capstone,
+                    });
+                    if (isMobile) setbar(false);
+                  }
+                }}
+                disabled={!allModulesCompleted}
+                className={`w-full text-left border rounded-xl p-4 transition-all duration-200 ${
+                  !allModulesCompleted
+                    ? 'border-zinc-800 bg-zinc-900/50 opacity-60 cursor-not-allowed'
+                    : course.capstone.isCompleted
+                      ? 'border-green-500/30 bg-green-950/30 hover:bg-green-950/40'
+                      : 'border-yellow-500/30 bg-yellow-950/20 hover:bg-yellow-950/30'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  {!allModulesCompleted ? (
+                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+                      <Lock size={14} className="text-zinc-500" />
+                    </div>
+                  ) : course.capstone.isCompleted ? (
+                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <CheckCircle size={16} className="text-green-500" />
+                    </div>
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                      <Award size={16} className="text-yellow-500" />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <span
+                      className={`font-bold text-sm block ${
+                        !allModulesCompleted ? 'text-zinc-500' : 'text-white'
+                      }`}
+                    >
+                      Capstone Project
+                    </span>
+                    <span className="text-xs text-zinc-500">{course.capstone.title}</span>
+                    {!allModulesCompleted && (
+                      <p className="text-xs text-yellow-500/70 mt-1">
+                        Complete all modules to unlock
+                      </p>
                     )}
                   </div>
-                )}
-              </div>
-            );
-          })}
+                  {allModulesCompleted && <ChevronRight size={16} className="text-zinc-400" />}
+                </div>
+              </button>
+            )}
 
-          {/* Capstone Project */}
-          {course.capstone && (
-            <div
-              className={`border rounded-xl p-4 ${
-                course.capstone.isLocked
-                  ? 'border-zinc-800 bg-zinc-900/30 opacity-60'
-                  : course.capstone.isCompleted
-                    ? 'border-green-500/30 bg-green-900/10'
-                    : 'border-yellow-500/30 bg-yellow-900/10'
-              }`}
-            >
+            {/* Certification */}
+            <div className="mt-4 p-4 bg-gradient-to-br from-blue-900/30 to-blue-950/30 border border-blue-500/20 rounded-xl">
               <div className="flex items-center gap-3 mb-3">
-                {course.capstone.isLocked ? (
-                  <Lock size={20} className="text-zinc-500" />
-                ) : course.capstone.isCompleted ? (
-                  <CheckCircle size={20} className="text-green-500" />
-                ) : (
-                  <Award size={20} className="text-yellow-500" />
-                )}
-                <span
-                  className={`font-bold text-sm ${
-                    course.capstone.isLocked ? 'text-zinc-500' : 'text-white'
-                  }`}
-                >
-                  Capstone Project
-                </span>
+                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <CreditCard size={16} className="text-blue-400" />
+                </div>
+                <span className="font-bold text-sm text-white">Final Certification</span>
               </div>
-              <div className="p-3 bg-black/20 rounded-lg">
-                <h4
-                  className={`font-medium text-sm ${
-                    course.capstone.isLocked ? 'text-zinc-500' : 'text-white'
-                  }`}
-                >
-                  {course.capstone.title}
-                </h4>
-                {course.capstone.description && (
-                  <p className="text-xs text-zinc-500 mt-1">{course.capstone.description}</p>
-                )}
-                {course.capstone.isLocked && (
-                  <p className="text-xs text-yellow-500 mt-2 flex items-center gap-1">
-                    <Lock size={12} />
-                    Complete all modules to unlock
-                  </p>
-                )}
-                {course.capstone.isCompleted && (
-                  <p className="text-xs text-green-400 mt-2 flex items-center gap-1">
-                    <CheckCircle size={12} />
-                    Capstone Completed!
-                  </p>
-                )}
-              </div>
+              <p className="text-xs text-zinc-400 mb-4">
+                Complete all modules and capstone to earn your certificate.
+              </p>
+              <button
+                disabled={!allModulesCompleted || !course.capstone?.isCompleted}
+                onClick={() => {
+                  if (allModulesCompleted && course.capstone?.isCompleted) {
+                    window.open(`/student/certificates/${coursename}`, '_blank');
+                  }
+                }}
+                className="w-full bg-blue-600 disabled:bg-zinc-800 disabled:text-zinc-500 hover:bg-blue-500 disabled:hover:bg-zinc-800 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
+              >
+                {!allModulesCompleted
+                  ? `${overallProgress}% Complete`
+                  : !course.capstone?.isCompleted
+                    ? 'Complete Capstone First'
+                    : 'Get Certificate'}
+              </button>
             </div>
-          )}
-
-          {/* Certification */}
-          <div className="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-xl">
-            <div className="flex items-center gap-3 mb-2">
-              <CreditCard size={20} className="text-blue-400" />
-              <span className="font-bold text-sm text-blue-100">Final Certification</span>
-            </div>
-            <p className="text-xs text-blue-300/70 mb-3">Complete all modules to get certified.</p>
-            <button
-              disabled={overallProgress < 100}
-              className="w-full bg-blue-600 disabled:bg-zinc-700 disabled:text-zinc-500 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded transition-colors"
-            >
-              {overallProgress < 100 ? `${overallProgress}% Complete` : 'Get Certificate'}
-            </button>
           </div>
         </div>
       </div>

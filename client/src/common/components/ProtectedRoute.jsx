@@ -6,7 +6,7 @@ import { selectIsAuthenticated } from '@/redux/slices';
 /**
  * ProtectedRoute component that wraps routes requiring authentication.
  * Redirects to login page if user is not authenticated.
- * 
+ *
  * @param {Object} props
  * @param {string} props.loginPath - Path to redirect unauthenticated users (default: '/student/login')
  */

@@ -17,7 +17,7 @@ const Notify = () => {
     );
   };
 
-  return <button onClick={handleSomeAction}>Notify</button>;
+  return <button onClick={handleSomeAction}></button>;
 };
 
 export default Notify;
