@@ -3,7 +3,8 @@ import {
     passwordResetEmailTemplate,
     enrollmentEmailTemplate,
     supportEmailTemplate,
-    certificateEmailTemplate
+    certificateEmailTemplate,
+    getPaymentRejectionEmailTemplate
 } from "./emailTemplates.js";
 
 /**
@@ -121,9 +122,26 @@ export const sendSupportEmailTemplate = async (
     });
 };
 
+/**
+ * Send payment rejection email
+ * @param {string} email - User email address
+ * @param {string} title - Email title
+ * @param {string} content - Email content/reason
+ * @returns {Promise<Object>} Email response
+ */
+export const sendPaymentRejectionEmail = async (email, name,title, content) => {
+    const html = getPaymentRejectionEmailTemplate(title,name,content);
+    return sendEmail({
+        to: email,
+        subject: "Payment Rejected",
+        html,
+    });
+};
+
 export default {
     sendEmail,
     sendPasswordResetEmailTemplate,
     sendEnrollmentConfirmationEmail,
     sendSupportEmailTemplate,
+    sendPaymentRejectionEmail,
 };

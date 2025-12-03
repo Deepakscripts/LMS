@@ -1,5 +1,9 @@
-import { Student } from "../../models/index.js";
-import { sendEnrollmentConfirmationEmail } from "../../services/email.js";
+import { Enrollment, Student, Payment } from "../../models/index.js";
+import mongoose from "mongoose";
+import {
+    sendEnrollmentConfirmationEmail,
+    sendPaymentRejectionEmail,
+} from "../../services/email.js";
 
 /**
  * Get all pending users (students awaiting verification)
@@ -162,119 +166,198 @@ export const getOngoingUsers = async (req, res) => {
         });
     }
 };
+/**
+ * Verify/Reject payment (Admin only)
+ * PATCH /api/admin/enrollment/:enrollmentId/payment
+ */
+export const updatePaymentStatus = async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-/**
- * Approve pending user (change status to verified)
- */
-/**
- * Approve pending user (change status to verified)
- */
-export const approveOngoingUser = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const { enrollmentId } = req.params;
+        const { action, paymentType, rejectionReason, amountPaid } = req.body;
 
-        // Find the pending student
-        const student = await Student.findOne({
-            _id: userId,
-            accountStatus: "pending",
-        });
+        const enrollment = await Enrollment.findById(enrollmentId)
+            .populate("partialPaymentDetails")
+            .populate("fullPaymentDetails")
+            .populate("course", "title price")
+            .populate("student")
+            .session(session);
 
-        if (!student) {
+        if (!enrollment) {
+            await session.abortTransaction();
             return res.status(404).json({
                 success: false,
-                message: "Pending student not found",
+                message: "Enrollment not found",
             });
         }
+        const coursePrice = enrollment.courseAmount || enrollment.course.price;
 
-        // Generate LMS password (returns plain password)
-        const lmsPassword = await student.generateLmsPassword();
-        const lmsId = await student.generateLmsId();
-
-        // Try to send enrollment email first
-        try {
-            await sendEnrollmentConfirmationEmail(
-                student.email,
-                student.name,
-                student.courseName,
-                lmsId,
-                lmsPassword,
-                process.env.LMS_LOGIN_URL
-            );
-        } catch (emailError) {
-            console.error("Email sending failed:", emailError);
-
-            // Reset lmsPassword if email fails
-            student.lmsPassword = undefined;
-
-            return res.status(500).json({
-                success: false,
-                message:
-                    "Failed to send enrollment email. Student not approved.",
-                error: emailError.message,
-            });
+        // Validate amount based on payment type
+        if (paymentType === "partial") {
+            if (amountPaid !== Math.ceil(coursePrice * 0.1)) {
+                await session.abortTransaction();
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Partial payment amount must be 10% of course price",
+                });
+            }
+        } else if (paymentType === "full") {
+            if (amountPaid !== coursePrice) {
+                await session.abortTransaction();
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Full payment amount must be equal to course price",
+                });
+            }
         }
 
-        // Only update status if email was sent successfully
-        student.accountStatus = "verified";
+        if (action === "approve") {
+            if (paymentType === "partial") {
+                enrollment.paymentStatus = "PARTIAL_PAID";
+                enrollment.amountPaid = amountPaid;
+                enrollment.amountRemaining = coursePrice - amountPaid;
+            } else if (paymentType === "full") {
+                enrollment.paymentStatus = "FULLY_PAID";
+                enrollment.amountPaid = coursePrice;
+                enrollment.amountRemaining = 0;
+            }
 
-        // Save student (pre-save hook will hash the lmsPassword)
-        await student.save();
+            const student = enrollment.student;
 
-        // Remove sensitive data before sending response
-        const studentResponse = student.toObject();
-        delete studentResponse.lmsPassword;
-        delete studentResponse.resetPasswordToken;
+            const lmsPassword = await student.generateLmsPassword();
+            const lmsId = await student.generateLmsId();
 
-        res.json({
+            try {
+                await sendEnrollmentConfirmationEmail(
+                    student.email,
+                    student.name,
+                    enrollment.course.title,
+                    lmsId,
+                    lmsPassword,
+                    process.env.LMS_LOGIN_URL
+                );
+                await student.save({ session });
+            } catch (emailError) {
+                console.error("Email sending failed:", emailError);
+                await session.abortTransaction();
+                return res.status(500).json({
+                    success: false,
+                    message:
+                        "Failed to send enrollment email. Payment not approved.",
+                    error: emailError.message,
+                });
+            }
+        } else if (action === "reject") {
+            // Send rejection email
+            try {
+                await sendPaymentRejectionEmail(
+                    enrollment.student.email,
+                    enrollment.student.name,
+                    "Payment Rejected",
+                    rejectionReason
+                );
+            } catch (emailError) {
+                console.error("Rejection email sending failed:", emailError);
+            }
+
+            // Reset payment status and remove payment details
+            if (paymentType === "partial") {
+                enrollment.paymentStatus = "UNPAID";
+                if (enrollment.partialPaymentDetails) {
+                    await Payment.findByIdAndDelete(
+                        enrollment.partialPaymentDetails._id,
+                        { session }
+                    );
+                    enrollment.partialPaymentDetails = null;
+                }
+            } else {
+                enrollment.paymentStatus = enrollment.partialPaymentDetails
+                    ? "PARTIAL_PAID"
+                    : "UNPAID";
+                if (enrollment.fullPaymentDetails) {
+                    await Payment.findByIdAndDelete(
+                        enrollment.fullPaymentDetails._id,
+                        { session }
+                    );
+                    enrollment.fullPaymentDetails = null;
+                }
+            }
+        }
+
+        await enrollment.save({ session });
+        await session.commitTransaction();
+
+        res.status(200).json({
             success: true,
-            message:
-                "Student approved and notification email sent successfully",
-            data: studentResponse,
+            message: `Payment ${
+                action === "approve" ? "approved" : "rejected"
+            } successfully`,
+            data: {
+                enrollmentId: enrollment._id,
+                paymentStatus: enrollment.paymentStatus,
+                amountPaid: enrollment.amountPaid,
+                amountRemaining: enrollment.amountRemaining,
+                rejectionReason: rejectionReason,
+            },
         });
     } catch (error) {
-        console.error("Approve student error:", error);
+        await session.abortTransaction();
+        console.error("Update payment status error:", error);
         res.status(500).json({
             success: false,
-            message: "Failed to approve student",
-            error: error.message,
+            message: "Failed to update payment status",
+            error:
+                process.env.NODE_ENV === "development"
+                    ? error.message
+                    : undefined,
         });
+    } finally {
+        session.endSession();
     }
 };
 
-/**
- * Reject pending student (change status to blocked or delete)
- */
-export const rejectOngoingUser = async (req, res) => {
+export const getEnrollmentDetails = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const { reason } = req.body;
+        const { enrollmentId } = req.params;
 
-        const student = await Student.findOneAndUpdate(
-            { _id: userId, accountStatus: "pending" },
-            { accountStatus: "blocked" },
-            { new: true }
-        ).select("-lmsPassword -resetPasswordToken");
+        const enrollment = await Enrollment.findById(enrollmentId)
+            .select(
+                "-completedQuizzes -completedTasks -completedModules -progressPercentage -isCompleted"
+            )
+            .populate(
+                "student",
+                "name middleName lastName email phoneNumber collegeName courseName yearOfStudy avatar"
+            )
+            .populate("course", "title slug price thumbnail")
+            .populate(
+                "partialPaymentDetails",
+                "accountHolderName bankName ifscCode accountNumber transactionId screenshotUrl currency"
+            )
+            .populate(
+                "fullPaymentDetails",
+                "accountHolderName bankName ifscCode accountNumber transactionId screenshotUrl currency"
+            );
 
-        if (!student) {
+        if (!enrollment) {
             return res.status(404).json({
                 success: false,
-                message: "Pending student not found",
+                message: "Enrollment not found",
             });
         }
 
-        // TODO: Send rejection email with reason
-        // await sendRejectionEmail(student.email, student.name, reason);
-
-        res.json({
+        res.status(200).json({
             success: true,
-            message: "Student rejected successfully",
-            data: student,
+            data: enrollment,
         });
     } catch (error) {
-        console.error("Reject student error:", error);
+        console.error("Get enrollment error:", error);
         res.status(500).json({
             success: false,
-            message: "Failed to reject student",
+            message: "Failed to get enrollment details",
             error: error.message,
         });
     }
