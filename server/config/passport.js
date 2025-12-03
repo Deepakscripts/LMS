@@ -11,13 +11,11 @@ const configurePassport = () => {
                 clientSecret: process.env.GOOGLE_CLIENT_SECRET,
                 callbackURL: "/api/auth/google/callback",
             },
-            async (accessToken, refreshToken, profile, cb) => {
-                console.log(profile);
+            async (accessToken, profile, cb) => {
 
                 try {
                     let student = await Student.findOneAndUpdate(
                         { googleId: profile.id },
-                        { isLoggedIn: true },
                         { new: true }
                     );
 
@@ -47,12 +45,10 @@ const configurePassport = () => {
                 callbackURL: "/api/auth/github/callback",
             },
             async (accessToken, profile, cb) => {
-                console.log("--->",profile);
-                console.log("--->A",accessToken);
+               
                 try {
                     let student = await Student.findOneAndUpdate(
                         { githubId: profile.id },
-                        { isLoggedIn: true },
                         { new: true }
                     );
 
