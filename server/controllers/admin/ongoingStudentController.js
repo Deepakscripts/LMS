@@ -1,4 +1,5 @@
 import { Student } from "../../models/index.js";
+import { sendEnrollmentConfirmationEmail } from "../../services/email.js";
 
 /**
  * Get all pending users (students awaiting verification)
@@ -165,15 +166,18 @@ export const getOngoingUsers = async (req, res) => {
 /**
  * Approve pending user (change status to verified)
  */
+/**
+ * Approve pending user (change status to verified)
+ */
 export const approveOngoingUser = async (req, res) => {
     try {
         const { userId } = req.params;
 
-        const student = await Student.findOneAndUpdate(
-            { _id: userId, accountStatus: "pending" },
-            { accountStatus: "verified" },
-            { new: true }
-        ).select("-lmsPassword -resetPasswordToken");
+        // Find the pending student
+        const student = await Student.findOne({
+            _id: userId,
+            accountStatus: "pending",
+        });
 
         if (!student) {
             return res.status(404).json({
@@ -182,13 +186,50 @@ export const approveOngoingUser = async (req, res) => {
             });
         }
 
-        // TODO: Send approval email to student
-        // await sendApprovalEmail(student.email, student.name);
+        // Generate LMS password (returns plain password)
+        const lmsPassword = await student.generateLmsPassword();
+        const lmsId = await student.generateLmsId();
+
+        // Try to send enrollment email first
+        try {
+            await sendEnrollmentConfirmationEmail(
+                student.email,
+                student.name,
+                student.courseName,
+                lmsId,
+                lmsPassword,
+                process.env.LMS_LOGIN_URL
+            );
+        } catch (emailError) {
+            console.error("Email sending failed:", emailError);
+
+            // Reset lmsPassword if email fails
+            student.lmsPassword = undefined;
+
+            return res.status(500).json({
+                success: false,
+                message:
+                    "Failed to send enrollment email. Student not approved.",
+                error: emailError.message,
+            });
+        }
+
+        // Only update status if email was sent successfully
+        student.accountStatus = "verified";
+
+        // Save student (pre-save hook will hash the lmsPassword)
+        await student.save();
+
+        // Remove sensitive data before sending response
+        const studentResponse = student.toObject();
+        delete studentResponse.lmsPassword;
+        delete studentResponse.resetPasswordToken;
 
         res.json({
             success: true,
-            message: "Student approved successfully",
-            data: student,
+            message:
+                "Student approved and notification email sent successfully",
+            data: studentResponse,
         });
     } catch (error) {
         console.error("Approve student error:", error);
