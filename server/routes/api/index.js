@@ -8,6 +8,7 @@ import activeUserRoutes from "./activeStudent.js";
 import coursesRoutes from "./courses.js";
 import analyticsRoutes from "./analytics.js";
 import paymentRoute from "./payment.js";
+import r2ServiceRoute from "./r2Service.js";
 
 const router = express.Router();
 
@@ -21,5 +22,6 @@ router.use("/admin/active/students", activeUserRoutes);
 router.use("/admin/course", coursesRoutes);
 router.use("/admin/analytics", analyticsRoutes);
 router.use("/public/payment", paymentRoute);
+router.use("/file", r2ServiceRoute);
 
 export default router;
