@@ -8,14 +8,12 @@ import ms from "ms";
  * @returns {Object} Cookie configuration object
  */
 export const getAccessTokenCookieOptions = () => ({
-    httpOnly: true, // Prevents XSS attacks - JavaScript cannot access
-    secure: true, // HTTPS only in production
-    
-    sameSite: "strict", // Prevents CSRF attacks
-   
+    // httpOnly: true, // Prevents XSS attacks - JavaScript cannot access
+    // secure: true, // HTTPS only in production
+    // sameSite: "strict", // Prevents CSRF attacks
     maxAge: ms(process.env.ACCESS_TOKEN_EXPIRY),
-     // sameSite: "lax", // Prevents CSRF attacks
-    // secure: false, // HTTPS only in production
+    sameSite: "lax", // Prevents CSRF attacks
+    secure: false, // HTTPS only in production
 });
 
 /**
