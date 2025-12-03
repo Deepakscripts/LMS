@@ -7,7 +7,6 @@ import { useNavigateWithRedux } from '../hooks/useNavigateWithRedux';
 const PublicProtectedRoute = ({ children }) => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const dispatch = useDispatch();
-  const navigate = useNavigateWithRedux();
 
   useEffect(() => {
     if (!isAuthenticated) {
