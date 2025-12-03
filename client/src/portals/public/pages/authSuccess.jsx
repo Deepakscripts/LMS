@@ -4,7 +4,7 @@ import authService from '../../../services/global/authService';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
 
-function AuthSuccess() {
+export default function AuthSuccess() {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,6 +38,4 @@ function AuthSuccess() {
     </div>
   );
 }
-
-export default AuthSuccess;
 

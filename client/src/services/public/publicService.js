@@ -1,4 +1,5 @@
 import { publicApi } from '../api';
+import api from '../api';
 
 // ============================================
 // LANDING PAGE
@@ -37,13 +38,13 @@ export const getTeamMembers = async () => {
 // COURSES (Public)
 // ============================================
 
-export const getPublicCourses = async (params = {}) => {
-  const response = await publicApi.get('/public/courses', { params });
+export const getPublicCourses = async () => {
+  const response = await publicApi.get('/public/get/all/courses');
   return response.data;
 };
 
 export const getPublicCourseBySlug = async slug => {
-  const response = await publicApi.get(`/public/courses/${slug}`);
+  const response = await publicApi.get(`/public/get/course/deatils/${slug}`);
   return response.data;
 };
 
@@ -70,7 +71,7 @@ export const getFAQs = async () => {
 // ============================================
 
 export const submitEnrollment = async enrollmentData => {
-  const response = await publicApi.post('/public/enrollment', enrollmentData);
+  const response = await api.post('/public/enroll', enrollmentData);
   return response.data;
 };
 
