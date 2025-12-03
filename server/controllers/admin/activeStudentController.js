@@ -512,7 +512,6 @@ export const getAllStudentsWithEnrollments = async (req, res) => {
 
         // Build match conditions
         const matchConditions = {
-            role: "student",
             accountStatus: "verified", // Only verified students
         };
 
@@ -664,10 +663,10 @@ export const getAllStudentsWithEnrollments = async (req, res) => {
                                   capstoneStatus === "submitted"
                                       ? "submitted"
                                       : capstoneStatus === "graded"
-                                        ? "graded"
-                                        : capstoneStatus === "in-progress"
-                                          ? "In Progress"
-                                          : "Not Submitted",
+                                      ? "graded"
+                                      : capstoneStatus === "in-progress"
+                                      ? "In Progress"
+                                      : "Not Submitted",
                           },
                       },
                   ]
