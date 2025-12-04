@@ -5,6 +5,7 @@ import StudentsTable from '../components/StudentsTable';
 import StatisticsSection from './StatisticsSection';
 import adminService from '@/services/admin/adminService';
 import { Button } from '@/common/components/ui/button';
+import CertificateIssueDialog from './CertificateIssueDialog';
 
 const ActiveStudents = () => {
   const [studentsData, setStudentsData] = useState([]);
@@ -12,49 +13,10 @@ const ActiveStudents = () => {
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Fetch active students data
-  const fetchActiveStudents = async (showLoading = true) => {
-    try {
-      if (showLoading) {
-        setIsLoading(true);
-      } else {
-        setIsRefreshing(true);
-      }
-      setError(null);
-
-      const response = await adminService.getActiveStudents();
-
-      if (response.success) {
-        // Transform API data to match table structure
-        const transformedData = response.data.students.map(student => ({
-          id: student._id || student.id,
-          enrollmentId: student.enrollmentId,
-          name: `${student.name || ''} ${student.middleName || ''} ${student.lastName || ''}`.trim(),
-          email: student.email,
-          college: student.collegeName,
-          year: student.yearOfStudy,
-          currentProgress: student.progressPercentage,
-          capstoneStatus: getCapstoneStatus(student),
-          paymentStatus: getPaymentStatus(student.paymentStatus),
-          isCompleted: student.isCompleted,
-          certificateId: student.certificateId,
-          userId: student._id || student.id,
-        }));
-        setStudentsData(transformedData);
-      } else {
-        throw new Error(response.message || 'Failed to fetch active students');
-      }
-    } catch (err) {
-      console.error('Error fetching active students:', err);
-      setError(err.message || 'Failed to load active students');
-      toast.error('Failed to load students', {
-        description: err.message || 'Please try again later',
-      });
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
-    }
-  };
+  // Certificate Dialog State
+  const [isCertDialogOpen, setIsCertDialogOpen] = useState(false);
+  const [selectedStudentForCert, setSelectedStudentForCert] = useState(null);
+  const [isIssuingCert, setIsIssuingCert] = useState(false);
 
   // Helper function to determine capstone status
   const getCapstoneStatus = student => {
@@ -79,46 +41,81 @@ const ActiveStudents = () => {
     return statusMap[status] || status;
   };
 
-  // Issue certificate handler
-  const handleIssueCertificate = async (enrollmentId, studentName) => {
+  // Fetch active students data
+  const fetchActiveStudents = async (showLoading = true) => {
     try {
-      toast.loading('Issuing certificate...', { id: 'cert-issue' });
+      if (showLoading) {
+        setIsLoading(true);
+      } else {
+        setIsRefreshing(true);
+      }
+      setError(null);
 
-      const response = await adminService.issueCertificateByEnrollmentId(enrollmentId);
+      const response = await adminService.getActiveStudents();
 
       if (response.success) {
-        toast.success('Certificate issued successfully!', {
-          id: 'cert-issue',
-          description: `Certificate has been issued to ${studentName}`,
-          icon: (
-            <svg
-              className="w-5 h-5 text-green-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          ),
-          duration: 5000,
-        });
-
-        // Refresh the students list
-        await fetchActiveStudents(false);
+        // Transform API data to match table structure
+        // response.data is an array of enrollments
+        const transformedData = response.data.map(enrollment => ({
+          id: enrollment._id,
+          enrollmentId: enrollment._id,
+          name: `${enrollment.student?.name || ''} ${enrollment.student?.middleName || ''} ${enrollment.student?.lastName || ''}`.trim(),
+          email: enrollment.student?.email,
+          college: enrollment.student?.collegeName,
+          year: enrollment.student?.yearOfStudy,
+          currentProgress: enrollment.progressPercentage || 0,
+          capstoneStatus: getCapstoneStatus(enrollment),
+          partialPaymentDetails: enrollment.partialPaymentDetails,
+          fullPaymentDetails: enrollment.fullPaymentDetails,
+          paymentStatus: getPaymentStatus(enrollment.paymentStatus),
+          isCompleted: enrollment.isCompleted || false,
+          courseAmount: enrollment.courseAmount,
+          amountRemaining: enrollment.amountRemaining,
+          certificateId: enrollment.certificateId,
+          userId: enrollment.student?._id,
+        }));
+        setStudentsData(transformedData);
       } else {
-        throw new Error(response.message || 'Failed to issue certificate');
+        throw new Error(response.message || 'Failed to fetch active students');
       }
+    } catch (err) {
+      console.error('Error fetching active students:', err);
+      setError(err.message || 'Failed to load active students');
+      toast.error('Failed to load students', {
+        description: err.message || 'Please try again later',
+      });
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  // Open Certificate Dialog
+  const handleIssueCertificateClick = (enrollmentId) => {
+    const student = studentsData.find(s => s.enrollmentId === enrollmentId);
+    if (student) {
+      setSelectedStudentForCert(student);
+      setIsCertDialogOpen(true);
+    }
+  };
+
+  // Confirm Issue Certificate
+  const handleConfirmIssueCertificate = async (student) => {
+    try {
+      setIsIssuingCert(true);
+      toast.loading('Issuing certificate...', { id: 'cert-issue' });
+
+      // const response = await adminService.issueCertificateByEnrollmentId({ enrollmentId: student.enrollmentId });
+
+      
     } catch (err) {
       console.error('Error issuing certificate:', err);
       toast.error('Failed to issue certificate', {
         id: 'cert-issue',
         description: err.message || 'Please try again later',
       });
+    } finally {
+      setIsIssuingCert(false);
     }
   };
 
@@ -185,7 +182,7 @@ const ActiveStudents = () => {
               <div className="mt-8">
                 <StudentsTable
                   data={studentsData}
-                  onIssueCertificate={handleIssueCertificate}
+                  onIssueCertificate={handleIssueCertificateClick}
                   onRefresh={handleRefresh}
                 />
               </div>
@@ -193,9 +190,17 @@ const ActiveStudents = () => {
           )}
         </div>
       </main>
+
+      {/* Certificate Issue Dialog */}
+      <CertificateIssueDialog
+        isOpen={isCertDialogOpen}
+        onOpenChange={setIsCertDialogOpen}
+        student={selectedStudentForCert}
+        onConfirm={handleConfirmIssueCertificate}
+        isIssuing={isIssuingCert}
+      />
     </div>
   );
 };
 
 export default ActiveStudents;
-

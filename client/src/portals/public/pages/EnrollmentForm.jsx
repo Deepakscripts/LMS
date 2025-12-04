@@ -10,6 +10,7 @@ import {
   selectUser,
   openLoginPopup,
 } from '@/redux/slices';
+import { toast } from 'sonner';
 
 const EnrollmentForm = () => {
   const dispatch = useDispatch();

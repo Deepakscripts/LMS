@@ -1,15 +1,17 @@
 // routes/admin/pendingUsers.routes.js
 import express from "express";
 import { ongoingStudentController } from "../../controllers/admin/index.js";
+import { enrollmentController } from "../../controllers/public/index.js";
 
 const router = express.Router();
 
 router.get("/", ongoingStudentController.getOngoingUsers);
 
-// PATCH /api/admin/pending-users/:userId/approve - Approve single user
-router.patch("/:userId/approve", ongoingStudentController.approveOngoingUser);
+router.get("/:enrollmentId", ongoingStudentController.getEnrollmentDetails);
 
-// PATCH /api/admin/pending-users/:userId/reject - Reject single user
-router.patch("/:userId/reject", ongoingStudentController.rejectOngoingUser);
+// PATCH /api/admin/pending-users/:userId/approve - Approve single user
+router.patch("/:enrollmentId/update-payment-status", ongoingStudentController.updatePaymentStatus);
+
+
 
 export default router;

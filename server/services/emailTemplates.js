@@ -193,10 +193,27 @@ export const supportEmailTemplate = (name, ticketId, subject) => {
     return getEmailTemplate(content, "Support Ticket Confirmation");
 };
 
+/**
+ * Generate payment rejection email content
+ */
+export const getPaymentRejectionEmailTemplate = (title, name, content) => {
+    const htmlContent = `
+        <h2 style="color: #dc3545;">${title}</h2>
+        <p>Hi ${name},</p>
+        <div style="background-color: #fff5f5; padding: 20px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #dc3545;">
+            ${content}
+        </div>
+        <p>If you believe this is an error, please contact support.</p>
+    `;
+    return getEmailTemplate(htmlContent, title);
+};
+
+
 export default {
     getEmailTemplate,
     passwordResetEmailTemplate,
     enrollmentEmailTemplate,
     certificateEmailTemplate,
     supportEmailTemplate,
+    getPaymentRejectionEmailTemplate,
 };
