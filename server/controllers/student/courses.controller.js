@@ -293,10 +293,14 @@ export const getCourseDetails = async (req, res) => {
                 stream: course.stream,
                 totalDuration: course.totalDuration,
                 tags: course.tags,
+                skills: course.skills || [],
                 progress: enrollment.progressPercentage,
                 modules,
                 capstone,
                 isCompleted: enrollment.isCompleted,
+                // Certificate related fields
+                certificateId: enrollment.certificateId || null,
+                completionDate: enrollment.completionDate || null,
                 // Payment related fields
                 enrollmentId: enrollment._id,
                 paymentStatus: enrollment.paymentStatus,

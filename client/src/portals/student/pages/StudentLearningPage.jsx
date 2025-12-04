@@ -1013,8 +1013,10 @@ const StudentLearningPage = () => {
                           await downloadFinalCertificate({
                             studentName: profile?.name || 'Student',
                             courseName: course?.title || 'Course',
-                            certificateId: course?.certificateId || `C2D-${Date.now()}`,
-                            issueDate: new Date(),
+                            certificateId: course?.certificateId || null,
+                            issueDate: course?.completionDate
+                              ? new Date(course.completionDate)
+                              : new Date(),
                             skills: course?.skills || [],
                           });
                           toast.success('Certificate downloaded successfully!');

@@ -158,6 +158,14 @@ function getSkillsForCourse(courseName) {
 
 // Generate Internship Certificate HTML
 function generateInternshipCertificate(studentName, courseName, date, certificateId) {
+  // Show certificate ID section only if certificateId exists
+  const certIdSection = certificateId
+    ? `<div>
+            <p style="font-size: 11px; color: #888; margin: 0; text-transform: uppercase; letter-spacing: 1px;">Certificate ID</p>
+            <p style="font-size: 14px; color: #1e3a5f; font-weight: 600; margin: 5px 0 0 0;">${certificateId}</p>
+          </div>`
+    : '';
+
   return `
     <div style="position: relative; width: 100%; height: 100%; background: linear-gradient(135deg, #fefefe 0%, #f8f9fa 100%); overflow: hidden; box-sizing: border-box;">
       <!-- Border Design -->
@@ -213,10 +221,7 @@ function generateInternshipCertificate(studentName, courseName, date, certificat
             <p style="font-size: 11px; color: #888; margin: 0; text-transform: uppercase; letter-spacing: 1px;">Date of Issue</p>
             <p style="font-size: 14px; color: #1e3a5f; font-weight: 600; margin: 5px 0 0 0;">${date}</p>
           </div>
-          <div>
-            <p style="font-size: 11px; color: #888; margin: 0; text-transform: uppercase; letter-spacing: 1px;">Certificate ID</p>
-            <p style="font-size: 14px; color: #1e3a5f; font-weight: 600; margin: 5px 0 0 0;">${certificateId}</p>
-          </div>
+          ${certIdSection}
         </div>
 
         <!-- Signature Section -->
