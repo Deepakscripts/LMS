@@ -1,9 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
 import { X, Loader2, Upload, CreditCard, Building2, User, Hash, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { submitFullPayment } from '../../../services/student/studentService';
 
-const PaymentModal = ({ isOpen, onClose, enrollmentId, courseTitle, amountRemaining, bankDetails, onSuccess }) => {
+// Constants for file validation
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+// Company bank details - defined outside to prevent recreation
+const COMPANY_BANK_DETAILS = {
+  accountName: 'Code2Dbug Pvt Ltd',
+  bank: 'HDFC Bank',
+  accountNo: '501004656578',
+  ifsc: 'HDFC0001234',
+};
+
+// Memoized form field component
+const FormField = memo(({ label, required, icon: Icon, children }) => (
+  <div>
+    <label className="block text-sm text-zinc-400 mb-1">
+      {label} {required && <span className="text-red-400">*</span>}
+    </label>
+    <div className="relative">
+      {Icon && (
+        <Icon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+      )}
+      {children}
+    </div>
+  </div>
+));
+
+FormField.displayName = 'FormField';
+
+const PaymentModal = memo(({
+  isOpen,
+  onClose,
+  enrollmentId,
+  courseTitle,
+  amountRemaining,
+  bankDetails,
+  onSuccess,
+}) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     accountHolderName: '',
@@ -28,60 +64,81 @@ const PaymentModal = ({ isOpen, onClose, enrollmentId, courseTitle, amountRemain
     }
   }, [bankDetails]);
 
-  const handleInputChange = (e) => {
+  // Cleanup preview URL on unmount
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const handleInputChange = useCallback(e => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const handleFileChange = (e) => {
+  const handleFileChange = useCallback(e => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
+      if (file.size > MAX_FILE_SIZE) {
         toast.error('File size should be less than 5MB');
         return;
       }
       setScreenshot(file);
+      // Cleanup previous preview URL
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
       setPreviewUrl(URL.createObjectURL(file));
     }
-  };
+  }, [previewUrl]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!formData.accountHolderName || !formData.bankName || !formData.ifscCode || !formData.accountNumber || !formData.transactionId) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
+  const handleSubmit = useCallback(
+    async e => {
+      e.preventDefault();
 
-    setLoading(true);
-    try {
-      const paymentData = {
-        ...formData,
-        screenshot,
-      };
-      
-      await submitFullPayment(enrollmentId, paymentData);
-      toast.success('Payment proof submitted successfully! It will be verified within 24-48 hours.');
-      onSuccess?.();
-      onClose();
-    } catch (error) {
-      console.error('Payment submission error:', error);
-      toast.error(error.response?.data?.message || 'Failed to submit payment proof');
-    } finally {
-      setLoading(false);
-    }
-  };
+      const { accountHolderName, bankName, ifscCode, accountNumber, transactionId } = formData;
+      if (!accountHolderName || !bankName || !ifscCode || !accountNumber || !transactionId) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const paymentData = {
+          ...formData,
+          screenshot,
+        };
+
+        await submitFullPayment(enrollmentId, paymentData);
+        toast.success('Payment proof submitted successfully! It will be verified within 24-48 hours.');
+        onSuccess?.();
+        onClose();
+      } catch (error) {
+        console.error('Payment submission error:', error);
+        toast.error(error.response?.data?.message || 'Failed to submit payment proof');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [formData, screenshot, enrollmentId, onSuccess, onClose]
+  );
+
+  // Memoized input base class
+  const inputBaseClass = useMemo(
+    () =>
+      'w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+    []
+  );
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+
       {/* Modal */}
       <div className="relative bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
@@ -90,10 +147,7 @@ const PaymentModal = ({ isOpen, onClose, enrollmentId, courseTitle, amountRemain
             <h2 className="text-xl font-bold text-white">Complete Payment</h2>
             <p className="text-sm text-zinc-400 mt-1">{courseTitle}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-lg transition-colors">
             <X size={20} className="text-zinc-400" />
           </button>
         </div>
@@ -115,10 +169,18 @@ const PaymentModal = ({ isOpen, onClose, enrollmentId, courseTitle, amountRemain
           <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4">
             <h4 className="text-sm font-semibold text-white mb-2">Transfer to:</h4>
             <div className="space-y-1 text-sm">
-              <p className="text-zinc-400">Account Name: <span className="text-white">Code2Dbug Pvt Ltd</span></p>
-              <p className="text-zinc-400">Bank: <span className="text-white">HDFC Bank</span></p>
-              <p className="text-zinc-400">Account No: <span className="text-white">501004656578</span></p>
-              <p className="text-zinc-400">IFSC: <span className="text-white">HDFC0001234</span></p>
+              <p className="text-zinc-400">
+                Account Name: <span className="text-white">{COMPANY_BANK_DETAILS.accountName}</span>
+              </p>
+              <p className="text-zinc-400">
+                Bank: <span className="text-white">{COMPANY_BANK_DETAILS.bank}</span>
+              </p>
+              <p className="text-zinc-400">
+                Account No: <span className="text-white">{COMPANY_BANK_DETAILS.accountNo}</span>
+              </p>
+              <p className="text-zinc-400">
+                IFSC: <span className="text-white">{COMPANY_BANK_DETAILS.ifsc}</span>
+              </p>
             </div>
           </div>
 
@@ -131,71 +193,51 @@ const PaymentModal = ({ isOpen, onClose, enrollmentId, courseTitle, amountRemain
 
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
-                <label className="block text-sm text-zinc-400 mb-1">
-                  Account Holder Name <span className="text-red-400">*</span>
-                </label>
-                <div className="relative">
-                  <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                <FormField label="Account Holder Name" required icon={User}>
                   <input
                     type="text"
                     name="accountHolderName"
                     value={formData.accountHolderName}
                     onChange={handleInputChange}
                     placeholder="John Doe"
-                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={inputBaseClass}
                   />
-                </div>
+                </FormField>
               </div>
 
-              <div>
-                <label className="block text-sm text-zinc-400 mb-1">
-                  Bank Name <span className="text-red-400">*</span>
-                </label>
-                <div className="relative">
-                  <Building2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-                  <input
-                    type="text"
-                    name="bankName"
-                    value={formData.bankName}
-                    onChange={handleInputChange}
-                    placeholder="HDFC Bank"
-                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
+              <FormField label="Bank Name" required icon={Building2}>
+                <input
+                  type="text"
+                  name="bankName"
+                  value={formData.bankName}
+                  onChange={handleInputChange}
+                  placeholder="HDFC Bank"
+                  className={inputBaseClass}
+                />
+              </FormField>
 
-              <div>
-                <label className="block text-sm text-zinc-400 mb-1">
-                  IFSC Code <span className="text-red-400">*</span>
-                </label>
-                <div className="relative">
-                  <Hash size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-                  <input
-                    type="text"
-                    name="ifscCode"
-                    value={formData.ifscCode}
-                    onChange={handleInputChange}
-                    placeholder="HDFC0001234"
-                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
-                  />
-                </div>
-              </div>
+              <FormField label="IFSC Code" required icon={Hash}>
+                <input
+                  type="text"
+                  name="ifscCode"
+                  value={formData.ifscCode}
+                  onChange={handleInputChange}
+                  placeholder="HDFC0001234"
+                  className={`${inputBaseClass} uppercase`}
+                />
+              </FormField>
 
               <div className="col-span-2">
-                <label className="block text-sm text-zinc-400 mb-1">
-                  Account Number <span className="text-red-400">*</span>
-                </label>
-                <div className="relative">
-                  <CreditCard size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                <FormField label="Account Number" required icon={CreditCard}>
                   <input
                     type="text"
                     name="accountNumber"
                     value={formData.accountNumber}
                     onChange={handleInputChange}
                     placeholder="XXXXXXXXXXXX"
-                    className="w-full pl-10 pr-4 py-2.5 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={inputBaseClass}
                   />
-                </div>
+                </FormField>
               </div>
             </div>
           </div>
@@ -273,12 +315,15 @@ const PaymentModal = ({ isOpen, onClose, enrollmentId, courseTitle, amountRemain
           </button>
 
           <p className="text-xs text-zinc-500 text-center">
-            Your payment will be verified within 24-48 hours. You will receive a notification once verified.
+            Your payment will be verified within 24-48 hours. You will receive a notification once
+            verified.
           </p>
         </form>
       </div>
     </div>
   );
-};
+});
+
+PaymentModal.displayName = 'PaymentModal';
 
 export default PaymentModal;

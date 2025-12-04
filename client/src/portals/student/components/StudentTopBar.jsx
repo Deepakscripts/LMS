@@ -1,8 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo, memo } from 'react';
 import {
   Bell,
-  ChevronRight,
-  ChevronLeft,
   X,
   CheckCheck,
   Trash2,
@@ -23,7 +21,8 @@ import {
   clearNotifications,
 } from '@/redux/slices';
 
-const NotificationIcon = ({ type }) => {
+// Notification icon component - memoized
+const NotificationIcon = memo(({ type }) => {
   switch (type) {
     case 'success':
       return <Award size={16} className="text-green-400" />;
@@ -36,7 +35,73 @@ const NotificationIcon = ({ type }) => {
     default:
       return <Info size={16} className="text-blue-400" />;
   }
+});
+
+NotificationIcon.displayName = 'NotificationIcon';
+
+// Time formatting utility - pure function
+const formatTime = timestamp => {
+  const now = Date.now();
+  const diff = now - timestamp;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${days}d ago`;
 };
+
+// Memoized notification item component
+const NotificationItem = memo(({ notification, onRemove }) => {
+  const handleRemove = useCallback(
+    () => onRemove(notification.id),
+    [onRemove, notification.id]
+  );
+
+  return (
+    <div className="p-4 border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors group">
+      <div className="flex gap-3">
+        <div className="shrink-0 w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+          <NotificationIcon type={notification.type} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-white line-clamp-1">
+            {notification.title}
+          </p>
+          <p className="text-xs text-zinc-400 line-clamp-2 mt-1">
+            {notification.message}
+          </p>
+          <p className="text-xs text-zinc-500 mt-2">
+            {formatTime(notification.id)}
+          </p>
+        </div>
+        <button
+          onClick={handleRemove}
+          className="shrink-0 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-zinc-700 transition-all"
+        >
+          <Trash2 size={14} className="text-zinc-400" />
+        </button>
+      </div>
+    </div>
+  );
+});
+
+NotificationItem.displayName = 'NotificationItem';
+
+// Empty state component
+const EmptyNotifications = memo(() => (
+  <div className="p-8 text-center">
+    <Bell size={32} className="mx-auto text-zinc-600 mb-3" />
+    <p className="text-sm text-zinc-400">No notifications yet</p>
+    <p className="text-xs text-zinc-500 mt-1">
+      We'll notify you when something arrives
+    </p>
+  </div>
+));
+
+EmptyNotifications.displayName = 'EmptyNotifications';
 
 const StudentTopBar = () => {
   const dispatch = useDispatch();
@@ -45,6 +110,15 @@ const StudentTopBar = () => {
   const notifications = useSelector(selectNotifications);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const notificationRef = useRef(null);
+
+  // Memoized page title
+  const pageTitle = useMemo(
+    () => currentNavigation.split('/').slice(-1)[0].replaceAll('-', ' ') || 'Dashboard',
+    [currentNavigation]
+  );
+
+  // Memoized unread count
+  const unreadCount = useMemo(() => notifications.length, [notifications.length]);
 
   // Close notification panel when clicking outside
   useEffect(() => {
@@ -58,38 +132,36 @@ const StudentTopBar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleRemoveNotification = id => {
-    dispatch(removeNotification(id));
-  };
+  const handleRemoveNotification = useCallback(
+    id => {
+      dispatch(removeNotification(id));
+    },
+    [dispatch]
+  );
 
-  const handleClearAll = () => {
+  const handleClearAll = useCallback(() => {
     dispatch(clearNotifications());
-  };
+  }, [dispatch]);
 
-  const formatTime = timestamp => {
-    const now = Date.now();
-    const diff = now - timestamp;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
+  const toggleNotificationPanel = useCallback(() => {
+    setIsNotificationOpen(prev => !prev);
+  }, []);
 
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    return `${days}d ago`;
-  };
+  const closeNotificationPanel = useCallback(() => {
+    setIsNotificationOpen(false);
+  }, []);
 
-  const unreadCount = notifications.length;
+  // Memoized title visibility class
+  const titleVisibilityClass = useMemo(
+    () => `text-xl ms-18 font-bold capitalize transition-all ${studentSidebarOpen ? 'hidden md:block' : 'block'}`,
+    [studentSidebarOpen]
+  );
 
   return (
     <div className="h-20 bg-black/50 backdrop-blur-md border-b border-zinc-800 flex items-center justify-between pe-4 sm:pe-8">
       <div className="flex items-center gap-4">
-        <h1
-          className={`text-xl ms-18 font-bold capitalize transition-all ${
-            studentSidebarOpen ? 'hidden md:block' : 'block'
-          }`}
-        >
-          {currentNavigation.split('/').slice(-1)[0].replaceAll('-', ' ') || 'Dashboard'}
+        <h1 className={titleVisibilityClass}>
+          {pageTitle}
         </h1>
       </div>
 
@@ -98,11 +170,11 @@ const StudentTopBar = () => {
         {/* Notification Bell */}
         <div className="relative" ref={notificationRef}>
           <button
-            onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+            onClick={toggleNotificationPanel}
             className="relative p-2 rounded-full hover:bg-zinc-800 transition-colors"
           >
             {unreadCount > 0 && (
-              <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+              <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
             )}
             <Bell
               size={20}
@@ -127,7 +199,7 @@ const StudentTopBar = () => {
                     </button>
                   )}
                   <button
-                    onClick={() => setIsNotificationOpen(false)}
+                    onClick={closeNotificationPanel}
                     className="p-1 rounded hover:bg-zinc-800 transition-colors"
                   >
                     <X size={16} className="text-zinc-400" />
@@ -139,42 +211,14 @@ const StudentTopBar = () => {
               <div className="max-h-80 overflow-y-auto">
                 {notifications.length > 0 ? (
                   notifications.map(notification => (
-                    <div
+                    <NotificationItem
                       key={notification.id}
-                      className="p-4 border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors group"
-                    >
-                      <div className="flex gap-3">
-                        <div className="shrink-0 w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
-                          <NotificationIcon type={notification.type} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-white line-clamp-1">
-                            {notification.title}
-                          </p>
-                          <p className="text-xs text-zinc-400 line-clamp-2 mt-1">
-                            {notification.message}
-                          </p>
-                          <p className="text-xs text-zinc-500 mt-2">
-                            {formatTime(notification.id)}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => handleRemoveNotification(notification.id)}
-                          className="shrink-0 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-zinc-700 transition-all"
-                        >
-                          <Trash2 size={14} className="text-zinc-400" />
-                        </button>
-                      </div>
-                    </div>
+                      notification={notification}
+                      onRemove={handleRemoveNotification}
+                    />
                   ))
                 ) : (
-                  <div className="p-8 text-center">
-                    <Bell size={32} className="mx-auto text-zinc-600 mb-3" />
-                    <p className="text-sm text-zinc-400">No notifications yet</p>
-                    <p className="text-xs text-zinc-500 mt-1">
-                      We'll notify you when something arrives
-                    </p>
-                  </div>
+                  <EmptyNotifications />
                 )}
               </div>
 
@@ -194,4 +238,4 @@ const StudentTopBar = () => {
   );
 };
 
-export default StudentTopBar;
+export default memo(StudentTopBar);

@@ -1,35 +1,57 @@
+import { memo, useCallback, useMemo } from 'react';
 import { PlayCircle, Clock, CheckCircle } from 'lucide-react';
 
 import { useNavigateWithRedux } from '@/common/hooks/useNavigateWithRedux';
 
-const LearningCard = ({ course, destination }) => {
+const LearningCard = memo(({ course, destination }) => {
   const navigate = useNavigateWithRedux();
 
+  // Memoize the navigation handler
+  const handleClick = useCallback(() => {
+    navigate(`/student/${destination}`);
+  }, [navigate, destination]);
+
   // Determine if we should show a gradient background or an image
-  const hasImageUrl = course.thumbnail && course.thumbnail.startsWith('http');
+  const hasImageUrl = useMemo(
+    () => course.thumbnail && course.thumbnail.startsWith('http'),
+    [course.thumbnail]
+  );
+
+  // Memoize progress bar color
+  const progressBarClass = useMemo(
+    () => `h-2 rounded-full transition-all duration-500 ${course.progress === 100 ? 'bg-green-500' : 'bg-blue-600'}`,
+    [course.progress]
+  );
+
+  // Memoize thumbnail style
+  const thumbnailStyle = useMemo(
+    () =>
+      hasImageUrl
+        ? {
+            backgroundImage: `url(${course.thumbnail})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }
+        : {},
+    [hasImageUrl, course.thumbnail]
+  );
+
+  // Memoize thumbnail class
+  const thumbnailClass = useMemo(
+    () => `h-40 w-full relative p-6 flex flex-col justify-between ${!hasImageUrl ? course.image : ''}`,
+    [hasImageUrl, course.image]
+  );
 
   return (
     <div
-      onClick={() => navigate(`/student/${destination}`)}
-      key={course.id}
+      onClick={handleClick}
       className="group block bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-zinc-700 transition-all duration-300 hover:-translate-y-1 cursor-pointer"
     >
       {/* Course Thumbnail / Glimpse */}
-      <div
-        className={`h-40 w-full relative p-6 flex flex-col justify-between ${!hasImageUrl ? course.image : ''}`}
-        style={
-          hasImageUrl
-            ? {
-                backgroundImage: `url(${course.thumbnail})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }
-            : {}
-        }
-      >
+      <div className={thumbnailClass} style={thumbnailStyle}>
         {/* Overlay for image thumbnails */}
         {hasImageUrl && (
-          <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors"></div>
+          <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors" />
         )}
 
         <div className="bg-black/40 backdrop-blur-md p-3 rounded-xl w-fit border border-white/10 relative z-10">
@@ -63,11 +85,9 @@ const LearningCard = ({ course, destination }) => {
           </div>
           <div className="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
             <div
-              className={`h-2 rounded-full transition-all duration-500 ${
-                course.progress === 100 ? 'bg-green-500' : 'bg-blue-600'
-              }`}
+              className={progressBarClass}
               style={{ width: `${course.progress}%` }}
-            ></div>
+            />
           </div>
         </div>
 
@@ -78,6 +98,8 @@ const LearningCard = ({ course, destination }) => {
       </div>
     </div>
   );
-};
+});
+
+LearningCard.displayName = 'LearningCard';
 
 export default LearningCard;

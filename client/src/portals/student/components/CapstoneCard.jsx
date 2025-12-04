@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useMemo, useCallback } from 'react';
 import {
   Github,
   Award,
@@ -12,6 +12,203 @@ import {
 } from 'lucide-react';
 
 import { useSubmitAssignment } from '../hooks';
+import { isValidGithubUrl, isValidUrl } from '../utils';
+
+// Locked state component
+const LockedCapstone = memo(({ title }) => (
+  <div className="max-w-2xl mx-auto bg-zinc-900 border border-zinc-800 rounded-2xl p-8 opacity-70">
+    <div className="text-center">
+      <div className="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
+        <Lock size={40} className="text-zinc-500" />
+      </div>
+      <h2 className="text-2xl font-bold text-zinc-400 mb-2">Capstone Project</h2>
+      <p className="text-zinc-500 mb-6">{title}</p>
+
+      <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
+        <p className="text-yellow-400 text-sm flex items-center justify-center gap-2">
+          <Lock size={16} />
+          Complete all modules to unlock the capstone project
+        </p>
+      </div>
+    </div>
+  </div>
+));
+
+LockedCapstone.displayName = 'LockedCapstone';
+
+// Status badge component
+const StatusBadge = memo(({ status }) => {
+  const statusColor = useMemo(() => {
+    switch (status) {
+      case 'approved':
+        return 'bg-green-500';
+      case 'graded':
+        return 'bg-blue-500';
+      case 'submitted':
+        return 'bg-yellow-500';
+      default:
+        return 'bg-zinc-500';
+    }
+  }, [status]);
+
+  return (
+    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-800 text-sm">
+      <span className={`w-2 h-2 rounded-full ${statusColor}`} />
+      <span className="capitalize">{status}</span>
+    </div>
+  );
+});
+
+StatusBadge.displayName = 'StatusBadge';
+
+// Submission link component
+const SubmissionLink = memo(({ icon: Icon, label, href, colorClass }) => (
+  <div>
+    <div className="flex items-center gap-2 mb-1">
+      <Icon size={16} className="text-zinc-400" />
+      <span className="text-sm text-zinc-400">{label}:</span>
+    </div>
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`${colorClass} flex items-center gap-2 text-sm break-all`}
+    >
+      {href}
+      <ExternalLink size={14} className="shrink-0" />
+    </a>
+  </div>
+));
+
+SubmissionLink.displayName = 'SubmissionLink';
+
+// Grade feedback component
+const GradeFeedback = memo(({ grade, feedback }) => (
+  <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4 mb-6 text-left">
+    <div className="flex items-center justify-between mb-2">
+      <span className="text-sm text-green-400 font-medium">Grade:</span>
+      <span className="text-lg font-bold text-green-400">{grade}</span>
+    </div>
+    {feedback && (
+      <div>
+        <span className="text-sm text-green-400 font-medium">Feedback:</span>
+        <p className="text-sm text-zinc-300 mt-1">{feedback}</p>
+      </div>
+    )}
+  </div>
+));
+
+GradeFeedback.displayName = 'GradeFeedback';
+
+// Certificate section component
+const CertificateSection = memo(() => (
+  <div className="mt-6 p-4 bg-linear-to-br from-blue-900/30 to-purple-900/30 border border-blue-500/30 rounded-xl">
+    <div className="flex items-center justify-center gap-2 mb-2">
+      <Award size={20} className="text-blue-400" />
+      <span className="font-bold text-white">Ready for Certificate!</span>
+    </div>
+    <p className="text-sm text-zinc-400 mb-4">
+      Your capstone is approved. Request your certificate now.
+    </p>
+    <button className="w-full bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-3 rounded-lg transition-all">
+      Request Certificate
+    </button>
+  </div>
+));
+
+CertificateSection.displayName = 'CertificateSection';
+
+// Submitted state component
+const SubmittedCapstone = memo(({ githubLink, liveLink, submissionStatus, capstone }) => (
+  <div className="max-w-2xl mx-auto bg-zinc-900 border border-zinc-700 rounded-2xl p-8">
+    <div className="text-center">
+      <div className="w-20 h-20 bg-linear-to-br from-yellow-500/20 to-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+        <Trophy size={40} className="text-yellow-400" />
+      </div>
+      <h2 className="text-2xl font-bold text-white mb-2">Capstone Project</h2>
+      <p className="text-zinc-400 mb-6">
+        {submissionStatus === 'approved'
+          ? 'Your capstone project has been approved!'
+          : submissionStatus === 'graded'
+            ? 'Your capstone project has been graded!'
+            : 'Capstone project submitted successfully!'}
+      </p>
+
+      {/* Submission Details */}
+      <div className="bg-zinc-800 rounded-lg p-4 mb-6 text-left space-y-3">
+        <SubmissionLink
+          icon={Github}
+          label="GitHub Repository"
+          href={githubLink}
+          colorClass="text-blue-400 hover:text-blue-300"
+        />
+        {liveLink && (
+          <SubmissionLink
+            icon={Globe}
+            label="Live Demo"
+            href={liveLink}
+            colorClass="text-green-400 hover:text-green-300"
+          />
+        )}
+      </div>
+
+      {/* Grade & Feedback (if graded) */}
+      {(submissionStatus === 'graded' || submissionStatus === 'approved') && capstone?.grade && (
+        <GradeFeedback grade={capstone.grade} feedback={capstone?.feedback} />
+      )}
+
+      {/* Status Badge */}
+      <div className="flex items-center justify-center gap-3">
+        <StatusBadge status={submissionStatus} />
+      </div>
+
+      {/* Certificate Request Section */}
+      {submissionStatus === 'approved' && <CertificateSection />}
+    </div>
+  </div>
+));
+
+SubmittedCapstone.displayName = 'SubmittedCapstone';
+
+// Error message component
+const ErrorMessage = memo(({ error }) => (
+  <div className="mb-4 p-3 bg-red-900/30 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-center gap-2">
+    <AlertCircle size={16} />
+    {error}
+  </div>
+));
+
+ErrorMessage.displayName = 'ErrorMessage';
+
+// Input field component
+const InputField = memo(({ icon: Icon, label, required, value, onChange, placeholder, isValid, errorMessage, ringColor = 'ring-yellow-500' }) => (
+  <div className="w-full mb-4">
+    <label className="block text-sm font-medium text-zinc-200 mb-2 text-left">
+      {label} {required ? <span className="text-red-400">*</span> : <span className="text-zinc-500">(Optional)</span>}
+    </label>
+    <div className="relative">
+      <Icon
+        size={18}
+        className="absolute left-4 top-1/2 transform -translate-y-1/2 text-zinc-400"
+      />
+      <input
+        type="url"
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={`w-full pl-12 pr-4 py-3 bg-zinc-800 border border-zinc-600 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:${ringColor} transition-all`}
+      />
+    </div>
+    {value && !isValid && (
+      <p className="text-red-400 text-sm mt-2 text-left flex items-center gap-1">
+        <AlertCircle size={14} />
+        {errorMessage}
+      </p>
+    )}
+  </div>
+));
+
+InputField.displayName = 'InputField';
 
 const CapstoneCard = ({ capstone, courseId, allModulesCompleted, onComplete }) => {
   const [githubLink, setGithubLink] = useState(capstone?.githubLink || '');
@@ -27,29 +224,21 @@ const CapstoneCard = ({ capstone, courseId, allModulesCompleted, onComplete }) =
 
   const isLocked = !allModulesCompleted;
 
-  const isValidGithubUrl = url => {
-    try {
-      new URL(url);
-      return url.includes('github.com');
-    } catch {
-      return false;
-    }
-  };
+  // Memoized validations
+  const isGithubValid = useMemo(() => isValidGithubUrl(githubLink), [githubLink]);
+  const isLiveLinkValid = useMemo(() => isValidUrl(liveLink), [liveLink]);
 
-  const isValidUrl = url => {
-    if (!url) return true; // Optional field
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
-  };
+  // Memoized handlers
+  const handleGithubChange = useCallback((e) => {
+    setGithubLink(e.target.value);
+  }, []);
 
-  const handleSubmit = async () => {
-    if (!isValidGithubUrl(githubLink)) {
-      return;
-    }
+  const handleLiveLinkChange = useCallback((e) => {
+    setLiveLink(e.target.value);
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
+    if (!isGithubValid) return;
 
     try {
       const response = await submit({
@@ -67,135 +256,38 @@ const CapstoneCard = ({ capstone, courseId, allModulesCompleted, onComplete }) =
     } catch (err) {
       console.error('Capstone submission failed:', err);
     }
-  };
+  }, [isGithubValid, submit, courseId, githubLink, liveLink, onComplete]);
+
+  // Memoized computed values
+  const canSubmit = useMemo(
+    () => githubLink && isGithubValid && (!liveLink || isLiveLinkValid) && !submitting,
+    [githubLink, isGithubValid, liveLink, isLiveLinkValid, submitting]
+  );
+
+  const buttonClass = useMemo(() => {
+    if (submitting) return 'bg-zinc-600 cursor-wait';
+    if (canSubmit) return 'bg-linear-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500';
+    return 'bg-zinc-600 cursor-not-allowed';
+  }, [submitting, canSubmit]);
+
+  const capstoneTitle = capstone?.title || 'Final Capstone Project';
+  const displayGithubLink = githubLink || capstone?.githubLink;
+  const displayLiveLink = liveLink || capstone?.liveLink;
 
   // Locked state
   if (isLocked) {
-    return (
-      <div className="max-w-2xl mx-auto bg-zinc-900 border border-zinc-800 rounded-2xl p-8 opacity-70">
-        <div className="text-center">
-          <div className="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Lock size={40} className="text-zinc-500" />
-          </div>
-          <h2 className="text-2xl font-bold text-zinc-400 mb-2">Capstone Project</h2>
-          <p className="text-zinc-500 mb-6">{capstone?.title || 'Final Capstone Project'}</p>
-
-          <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
-            <p className="text-yellow-400 text-sm flex items-center justify-center gap-2">
-              <Lock size={16} />
-              Complete all modules to unlock the capstone project
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+    return <LockedCapstone title={capstoneTitle} />;
   }
 
   // Already submitted state
   if (isSubmitted) {
     return (
-      <div className="max-w-2xl mx-auto bg-zinc-900 border border-zinc-700 rounded-2xl p-8">
-        <div className="text-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Trophy size={40} className="text-yellow-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Capstone Project</h2>
-          <p className="text-zinc-400 mb-6">
-            {submissionStatus === 'approved'
-              ? 'Your capstone project has been approved!'
-              : submissionStatus === 'graded'
-                ? 'Your capstone project has been graded!'
-                : 'Capstone project submitted successfully!'}
-          </p>
-
-          {/* Submission Details */}
-          <div className="bg-zinc-800 rounded-lg p-4 mb-6 text-left space-y-3">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Github size={16} className="text-zinc-400" />
-                <span className="text-sm text-zinc-400">GitHub Repository:</span>
-              </div>
-              <a
-                href={githubLink || capstone?.githubLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-400 hover:text-blue-300 flex items-center gap-2 text-sm break-all"
-              >
-                {githubLink || capstone?.githubLink}
-                <ExternalLink size={14} className="shrink-0" />
-              </a>
-            </div>
-            {(liveLink || capstone?.liveLink) && (
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Globe size={16} className="text-zinc-400" />
-                  <span className="text-sm text-zinc-400">Live Demo:</span>
-                </div>
-                <a
-                  href={liveLink || capstone?.liveLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-green-400 hover:text-green-300 flex items-center gap-2 text-sm break-all"
-                >
-                  {liveLink || capstone?.liveLink}
-                  <ExternalLink size={14} className="shrink-0" />
-                </a>
-              </div>
-            )}
-          </div>
-
-          {/* Grade & Feedback (if graded) */}
-          {(submissionStatus === 'graded' || submissionStatus === 'approved') &&
-            capstone?.grade && (
-              <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4 mb-6 text-left">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-green-400 font-medium">Grade:</span>
-                  <span className="text-lg font-bold text-green-400">{capstone.grade}</span>
-                </div>
-                {capstone?.feedback && (
-                  <div>
-                    <span className="text-sm text-green-400 font-medium">Feedback:</span>
-                    <p className="text-sm text-zinc-300 mt-1">{capstone.feedback}</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-          {/* Status Badge */}
-          <div className="flex items-center justify-center gap-3">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-800 text-sm">
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  submissionStatus === 'approved'
-                    ? 'bg-green-500'
-                    : submissionStatus === 'graded'
-                      ? 'bg-blue-500'
-                      : submissionStatus === 'submitted'
-                        ? 'bg-yellow-500'
-                        : 'bg-zinc-500'
-                }`}
-              ></span>
-              <span className="capitalize">{submissionStatus}</span>
-            </div>
-          </div>
-
-          {/* Certificate Request Section */}
-          {submissionStatus === 'approved' && (
-            <div className="mt-6 p-4 bg-gradient-to-br from-blue-900/30 to-purple-900/30 border border-blue-500/30 rounded-xl">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Award size={20} className="text-blue-400" />
-                <span className="font-bold text-white">Ready for Certificate!</span>
-              </div>
-              <p className="text-sm text-zinc-400 mb-4">
-                Your capstone is approved. Request your certificate now.
-              </p>
-              <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-3 rounded-lg transition-all">
-                Request Certificate
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+      <SubmittedCapstone
+        githubLink={displayGithubLink}
+        liveLink={displayLiveLink}
+        submissionStatus={submissionStatus}
+        capstone={capstone}
+      />
     );
   }
 
@@ -203,7 +295,7 @@ const CapstoneCard = ({ capstone, courseId, allModulesCompleted, onComplete }) =
   return (
     <div className="max-w-2xl mx-auto bg-zinc-900 border border-zinc-700 rounded-2xl p-8">
       <div className="text-center">
-        <div className="w-20 h-20 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="w-20 h-20 bg-linear-to-br from-yellow-500/20 to-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
           <Award size={40} className="text-yellow-400" />
         </div>
         <h2 className="text-2xl font-bold text-white mb-2">Capstone Project</h2>
@@ -224,79 +316,37 @@ const CapstoneCard = ({ capstone, courseId, allModulesCompleted, onComplete }) =
         </div>
 
         {/* GitHub Link Input */}
-        <div className="w-full mb-4">
-          <label className="block text-sm font-medium text-zinc-200 mb-2 text-left">
-            GitHub Repository Link <span className="text-red-400">*</span>
-          </label>
-          <div className="relative">
-            <Github
-              size={18}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-zinc-400"
-            />
-            <input
-              type="url"
-              value={githubLink}
-              onChange={e => setGithubLink(e.target.value)}
-              placeholder="https://github.com/username/capstone-project"
-              className="w-full pl-12 pr-4 py-3 bg-zinc-800 border border-zinc-600 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all"
-            />
-          </div>
-          {githubLink && !isValidGithubUrl(githubLink) && (
-            <p className="text-red-400 text-sm mt-2 text-left flex items-center gap-1">
-              <AlertCircle size={14} />
-              Please enter a valid GitHub repository link
-            </p>
-          )}
-        </div>
+        <InputField
+          icon={Github}
+          label="GitHub Repository Link"
+          required
+          value={githubLink}
+          onChange={handleGithubChange}
+          placeholder="https://github.com/username/capstone-project"
+          isValid={isGithubValid}
+          errorMessage="Please enter a valid GitHub repository link"
+        />
 
         {/* Live Link Input (Optional) */}
-        <div className="w-full mb-6">
-          <label className="block text-sm font-medium text-zinc-200 mb-2 text-left">
-            Live Demo Link <span className="text-zinc-500">(Optional)</span>
-          </label>
-          <div className="relative">
-            <Globe
-              size={18}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-zinc-400"
-            />
-            <input
-              type="url"
-              value={liveLink}
-              onChange={e => setLiveLink(e.target.value)}
-              placeholder="https://your-project.vercel.app"
-              className="w-full pl-12 pr-4 py-3 bg-zinc-800 border border-zinc-600 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition-all"
-            />
-          </div>
-          {liveLink && !isValidUrl(liveLink) && (
-            <p className="text-red-400 text-sm mt-2 text-left flex items-center gap-1">
-              <AlertCircle size={14} />
-              Please enter a valid URL
-            </p>
-          )}
+        <div className="mb-6">
+          <InputField
+            icon={Globe}
+            label="Live Demo Link"
+            required={false}
+            value={liveLink}
+            onChange={handleLiveLinkChange}
+            placeholder="https://your-project.vercel.app"
+            isValid={isLiveLinkValid}
+            errorMessage="Please enter a valid URL"
+          />
         </div>
 
-        {submitError && (
-          <div className="mb-4 p-3 bg-red-900/30 border border-red-500/30 rounded-lg text-red-400 text-sm flex items-center gap-2">
-            <AlertCircle size={16} />
-            {submitError}
-          </div>
-        )}
+        {submitError && <ErrorMessage error={submitError} />}
 
         <button
           onClick={handleSubmit}
-          disabled={
-            !githubLink ||
-            !isValidGithubUrl(githubLink) ||
-            (liveLink && !isValidUrl(liveLink)) ||
-            submitting
-          }
-          className={`w-full py-3 rounded-lg font-medium text-white transition-all flex items-center justify-center gap-2 ${
-            submitting
-              ? 'bg-zinc-600 cursor-wait'
-              : githubLink && isValidGithubUrl(githubLink) && (!liveLink || isValidUrl(liveLink))
-                ? 'bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500'
-                : 'bg-zinc-600 cursor-not-allowed'
-          }`}
+          disabled={!canSubmit}
+          className={`w-full py-3 rounded-lg font-medium text-white transition-all flex items-center justify-center gap-2 ${buttonClass}`}
         >
           {submitting ? (
             <>
@@ -315,4 +365,4 @@ const CapstoneCard = ({ capstone, courseId, allModulesCompleted, onComplete }) =
   );
 };
 
-export default CapstoneCard;
+export default memo(CapstoneCard);
