@@ -1,8 +1,6 @@
 import {
     Student,
-    Course,
     Enrollment,
-    Certificate,
     Submission,
 } from "../../models/index.js";
 import { Parser } from "json2csv";
@@ -39,7 +37,7 @@ export const getActiveStudentStats = async (req, res) => {
             getCompletionStatistics(dateFilter),
         ]);
 
-        res.json({
+        res.status(200).json({
             success: true,
             message: "Dashboard statistics retrieved successfully",
             data: {
@@ -65,7 +63,7 @@ export const getActiveStudentStats = async (req, res) => {
 
 /**
  * Helper: Get Total Active Students Breakdown (Today, This Week, This Month)
- * ONLY VERIFIED STUDENTS
+ * Based on paid enrollments
  */
 async function getTotalActiveStudentsBreakdown(dateFilter) {
     const now = new Date();
@@ -84,26 +82,33 @@ async function getTotalActiveStudentsBreakdown(dateFilter) {
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    // Base query - ONLY VERIFIED STUDENTS
+    // Base query - paid enrollments only
     const baseQuery = {
-        role: "student",
-        accountStatus: "verified", // ✅ Only verified students
+        paymentStatus: {
+            $nin: ["UNPAID", "PARTIAL_PAYMENT_VERIFICATION_PENDING"],
+        },
     };
 
-    const stats = await Student.aggregate([
+    const stats = await Enrollment.aggregate([
         { $match: baseQuery },
+        {
+            $group: {
+                _id: "$student",
+                enrollmentDate: { $min: "$createdAt" },
+            },
+        },
         {
             $facet: {
                 // Today's count
                 today: [
-                    { $match: { createdAt: { $gte: todayStart } } },
+                    { $match: { enrollmentDate: { $gte: todayStart } } },
                     { $count: "count" },
                 ],
                 // Yesterday's count (for comparison)
                 yesterday: [
                     {
                         $match: {
-                            createdAt: {
+                            enrollmentDate: {
                                 $gte: yesterdayStart,
                                 $lt: todayStart,
                             },
@@ -113,14 +118,14 @@ async function getTotalActiveStudentsBreakdown(dateFilter) {
                 ],
                 // This week's count
                 thisWeek: [
-                    { $match: { createdAt: { $gte: weekStart } } },
+                    { $match: { enrollmentDate: { $gte: weekStart } } },
                     { $count: "count" },
                 ],
                 // Last week's count (for comparison)
                 lastWeek: [
                     {
                         $match: {
-                            createdAt: {
+                            enrollmentDate: {
                                 $gte: lastWeekStart,
                                 $lt: weekStart,
                             },
@@ -130,14 +135,14 @@ async function getTotalActiveStudentsBreakdown(dateFilter) {
                 ],
                 // This month's count
                 thisMonth: [
-                    { $match: { createdAt: { $gte: monthStart } } },
+                    { $match: { enrollmentDate: { $gte: monthStart } } },
                     { $count: "count" },
                 ],
                 // Last month's count (for comparison)
                 lastMonth: [
                     {
                         $match: {
-                            createdAt: {
+                            enrollmentDate: {
                                 $gte: lastMonthStart,
                                 $lt: monthStart,
                             },
@@ -185,37 +190,19 @@ async function getTotalActiveStudentsBreakdown(dateFilter) {
 
 /**
  * Helper: Get Active Students per Domain
- * ONLY VERIFIED STUDENTS + Date Range Filter
+ * Based on paid enrollments + Date Range Filter
  */
 async function getActiveStudentsPerDomain(dateFilter) {
     const matchConditions = {
-        paymentStatus: { $in: ["PARTIAL_PAID", "FULLY_PAID"] },
+        paymentStatus: {
+            $nin: ["UNPAID", "PARTIAL_PAYMENT_VERIFICATION_PENDING"],
+        },
         ...dateFilter, // Apply date filter if provided
     };
 
     const domainStats = await Enrollment.aggregate([
         // Match enrollments within date range
         { $match: matchConditions },
-
-        // Lookup student details to verify status
-        {
-            $lookup: {
-                from: "students",
-                localField: "student",
-                foreignField: "_id",
-                as: "studentDetails",
-            },
-        },
-
-        { $unwind: "$studentDetails" },
-
-        // ✅ Filter only VERIFIED students
-        {
-            $match: {
-                "studentDetails.role": "student",
-                "studentDetails.accountStatus": "verified",
-            },
-        },
 
         // Lookup course details
         {
@@ -258,34 +245,16 @@ async function getActiveStudentsPerDomain(dateFilter) {
 
 /**
  * Helper: Get Completion Statistics
- * ONLY VERIFIED STUDENTS
+ * Based on paid enrollments
  */
 async function getCompletionStatistics(dateFilter) {
     const completionStats = await Enrollment.aggregate([
         {
             $match: {
-                paymentStatus: { $in: ["PARTIAL_PAID", "FULLY_PAID"] },
+                paymentStatus: {
+                    $nin: ["UNPAID", "PARTIAL_PAYMENT_VERIFICATION_PENDING"],
+                },
                 ...dateFilter,
-            },
-        },
-
-        // Lookup student details
-        {
-            $lookup: {
-                from: "students",
-                localField: "student",
-                foreignField: "_id",
-                as: "studentDetails",
-            },
-        },
-
-        { $unwind: "$studentDetails" },
-
-        // ✅ Filter only VERIFIED students
-        {
-            $match: {
-                "studentDetails.role": "student",
-                "studentDetails.accountStatus": "verified",
             },
         },
 
@@ -361,452 +330,36 @@ function calculateGrowth(current, previous) {
     return Math.round(((current - previous) / previous) * 100);
 }
 
-// /**
-//  * Get detailed breakdown of students by domain with date filter
-//  */
-// export const getStudentsByDomainDetailed = async (req, res) => {
-//     try {
-//         const { domain, startDate, endDate, page = 1, limit = 20 } = req.query;
-
-//         if (!domain) {
-//             return res.status(400).json({
-//                 success: false,
-//                 message: "Domain parameter is required",
-//             });
-//         }
-
-//         // Build date filter
-//         let enrollmentDateFilter = {};
-//         if (startDate || endDate) {
-//             enrollmentDateFilter.enrollmentDate = {};
-//             if (startDate) {
-//                 enrollmentDateFilter.enrollmentDate.$gte = new Date(startDate);
-//             }
-//             if (endDate) {
-//                 enrollmentDateFilter.enrollmentDate.$lte = new Date(endDate);
-//             }
-//         }
-
-//         // Find courses in this domain
-//         const courses = await Course.find({ stream: domain }, { _id: 1 });
-//         const courseIds = courses.map((c) => c._id);
-
-//         const aggregate = Enrollment.aggregate([
-//             {
-//                 $match: {
-//                     course: { $in: courseIds },
-//                     paymentStatus: "paid",
-//                     ...enrollmentDateFilter,
-//                 },
-//             },
-
-//             // Lookup student details
-//             {
-//                 $lookup: {
-//                     from: "users",
-//                     localField: "student",
-//                     foreignField: "_id",
-//                     as: "studentDetails",
-//                 },
-//             },
-
-//             { $unwind: "$studentDetails" },
-
-//             // ✅ Filter only VERIFIED students
-//             {
-//                 $match: {
-//                     "studentDetails.role": "student",
-//                     "studentDetails.accountStatus": "verified",
-//                 },
-//             },
-
-//             // Lookup course details
-//             {
-//                 $lookup: {
-//                     from: "courses",
-//                     localField: "course",
-//                     foreignField: "_id",
-//                     as: "courseDetails",
-//                 },
-//             },
-
-//             { $unwind: "$courseDetails" },
-
-//             // Project required fields
-//             {
-//                 $project: {
-//                     _id: 1,
-//                     studentId: "$studentDetails._id",
-//                     studentName: {
-//                         $trim: {
-//                             input: {
-//                                 $concat: [
-//                                     "$studentDetails.name",
-//                                     " ",
-//                                     {
-//                                         $ifNull: [
-//                                             "$studentDetails.lastName",
-//                                             "",
-//                                         ],
-//                                     },
-//                                 ],
-//                             },
-//                         },
-//                     },
-//                     studentEmail: "$studentDetails.email",
-//                     collegeName: "$studentDetails.collegeName",
-//                     courseName: "$courseDetails.title",
-//                     progress: "$progressPercentage",
-//                     enrollmentDate: "$enrollmentDate",
-//                     isCompleted: 1,
-//                     accountStatus: "$studentDetails.accountStatus",
-//                 },
-//             },
-
-//             { $sort: { enrollmentDate: -1 } },
-//         ]);
-
-//         // Pagination
-//         const options = {
-//             page: parseInt(page),
-//             limit: parseInt(limit),
-//             customLabels: {
-//                 docs: "students",
-//                 totalDocs: "totalStudents",
-//             },
-//         };
-
-//         const result = await Enrollment.aggregatePaginate(aggregate, options);
-
-//         res.json({
-//             success: true,
-//             data: result,
-//         });
-//     } catch (error) {
-//         console.error("Get students by domain error:", error);
-//         res.status(500).json({
-//             success: false,
-//             message: "Failed to get students by domain",
-//             error: error.message,
-//         });
-//     }
-// };
-
 /**
  * Get All Students with Enrollment Details
  * Includes: Payment Status, Capstone Status, College, Year filters
  */
 export const getAllStudentsWithEnrollments = async (req, res) => {
     try {
-        const {
-            page = 1,
-            limit = 10,
-            collegeName = "",
-            yearOfStudy = "",
-            paymentStatus = "",
-            capstoneStatus = "",
-            search = "",
-            sortBy = "createdAt",
-            sortOrder = "desc",
-        } = req.query;
-
-        // Build match conditions
-        const matchConditions = {
-            role: "student",
-            accountStatus: "verified", // Only verified students
-        };
-
-        // Search by name or email
-        if (search) {
-            matchConditions.$or = [
-                { name: { $regex: search, $options: "i" } },
-                { lastName: { $regex: search, $options: "i" } },
-                { email: { $regex: search, $options: "i" } },
-            ];
-        }
-
-        // Filter by college
-        if (collegeName && collegeName !== "All") {
-            matchConditions.collegeName = {
-                $regex: collegeName,
-                $options: "i",
-            };
-        }
-
-        // Filter by year
-        if (yearOfStudy && yearOfStudy !== "All") {
-            matchConditions.yearOfStudy = yearOfStudy;
-        }
-
-        const aggregate = Student.aggregate([
-            // Stage 1: Match students
-            { $match: matchConditions },
-
-            // Stage 2: Lookup enrollments
-            {
-                $lookup: {
-                    from: "enrollments",
-                    localField: "_id",
-                    foreignField: "student",
-                    as: "enrollments",
-                },
+        const enrollments = await Enrollment.find({
+            paymentStatus: {
+                $nin: ["UNPAID", "PARTIAL_PAYMENT_VERIFICATION_PENDING"],
             },
+        })
+            .select(
+                "-completedQuizzes -completedTasks -completedModules -progressPercentage -isCompleted"
+            )
+            .populate("student")
+            .populate("course", "title slug price thumbnail stream")
+            .populate("partialPaymentDetails")
+            .populate("fullPaymentDetails")
+            .sort({ createdAt: -1 });
 
-            // Stage 3: Unwind enrollments (one row per enrollment)
-            {
-                $unwind: {
-                    path: "$enrollments",
-                    preserveNullAndEmptyArrays: true,
-                },
-            },
-
-            // Stage 4: Lookup course details
-            {
-                $lookup: {
-                    from: "courses",
-                    localField: "enrollments.course",
-                    foreignField: "_id",
-                    as: "courseDetails",
-                },
-            },
-
-            {
-                $unwind: {
-                    path: "$courseDetails",
-                    preserveNullAndEmptyArrays: true,
-                },
-            },
-
-            // Stage 5: Lookup capstone submissions
-            {
-                $lookup: {
-                    from: "submissions",
-                    let: {
-                        enrollmentId: "$enrollments._id",
-                        courseId: "$enrollments.course",
-                    },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        {
-                                            $eq: [
-                                                "$enrollment",
-                                                "$$enrollmentId",
-                                            ],
-                                        },
-                                        { $eq: ["$type", "assignment"] },
-                                    ],
-                                },
-                            },
-                        },
-                        // Get latest capstone submission
-                        { $sort: { createdAt: -1 } },
-                        { $limit: 1 },
-                    ],
-                    as: "capstoneSubmissions",
-                },
-            },
-
-            // Stage 6: Add computed fields
-            {
-                $addFields: {
-                    fullName: {
-                        $trim: {
-                            input: {
-                                $concat: [
-                                    "$name",
-                                    " ",
-                                    { $ifNull: ["$lastName", ""] },
-                                ],
-                            },
-                        },
-                    },
-                    paymentStatus: {
-                        $ifNull: ["$enrollments.paymentStatus", "N/A"],
-                    },
-                    capstoneStatus: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$capstoneSubmissions" }, 0] },
-                            then: {
-                                $arrayElemAt: [
-                                    "$capstoneSubmissions.status",
-                                    0,
-                                ],
-                            },
-                            else: "Not Submitted",
-                        },
-                    },
-                    capstoneSubmissionId: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$capstoneSubmissions" }, 0] },
-                            then: {
-                                $arrayElemAt: ["$capstoneSubmissions._id", 0],
-                            },
-                            else: null,
-                        },
-                    },
-                },
-            },
-
-            // Stage 7: Filter by payment status if provided
-            ...(paymentStatus && paymentStatus !== "All"
-                ? [{ $match: { paymentStatus: paymentStatus } }]
-                : []),
-
-            // Stage 8: Filter by capstone status if provided
-            ...(capstoneStatus && capstoneStatus !== "All"
-                ? [
-                      {
-                          $match: {
-                              capstoneStatus:
-                                  capstoneStatus === "submitted"
-                                      ? "submitted"
-                                      : capstoneStatus === "graded"
-                                        ? "graded"
-                                        : capstoneStatus === "in-progress"
-                                          ? "In Progress"
-                                          : "Not Submitted",
-                          },
-                      },
-                  ]
-                : []),
-
-            // Stage 9: Project final fields
-            {
-                $project: {
-                    _id: 1,
-                    fullName: 1,
-                    name: 1,
-                    lastName: 1,
-                    email: 1,
-                    collegeName: 1,
-                    yearOfStudy: 1,
-                    phoneNumber: 1,
-                    avatar: 1,
-                    enrollmentId: "$enrollments._id",
-                    courseId: "$courseDetails._id",
-                    courseName: "$courseDetails.title",
-                    courseStream: "$courseDetails.stream",
-                    paymentStatus: 1,
-                    amountPaid: "$enrollments.amountPaid",
-                    transactionId: "$enrollments.transactionId",
-                    capstoneStatus: 1,
-                    capstoneSubmissionId: 1,
-                    progressPercentage: "$enrollments.progressPercentage",
-                    isCompleted: "$enrollments.isCompleted",
-                    certificateId: "$enrollments.certificateId",
-                    enrollmentDate: "$enrollments.enrollmentDate",
-                    createdAt: 1,
-                },
-            },
-
-            // Stage 10: Sort
-            {
-                $sort: {
-                    [sortBy]: sortOrder === "asc" ? 1 : -1,
-                    _id: 1,
-                },
-            },
-        ]);
-
-        // Pagination
-        const options = {
-            page: parseInt(page),
-            limit: parseInt(limit),
-            customLabels: {
-                docs: "students",
-                totalDocs: "totalStudents",
-                limit: "pageSize",
-                page: "currentPage",
-                totalPages: "totalPages",
-                hasNextPage: "hasNext",
-                hasPrevPage: "hasPrev",
-            },
-        };
-
-        const result = await Student.aggregatePaginate(aggregate, options);
-
-        res.json({
+        res.status(200).json({
             success: true,
             message: "Students with enrollments retrieved successfully",
-            data: result,
+            data: enrollments,
         });
     } catch (error) {
         console.error("Get students error:", error);
         res.status(500).json({
             success: false,
             message: "Failed to get students",
-            error: error.message,
-        });
-    }
-};
-
-/**
- * Get Filter Options (Colleges, Payment Status, Capstone Status)
- */
-export const getFilterOptions = async (req, res) => {
-    try {
-        const options = await Student.aggregate([
-            { $match: { role: "student", accountStatus: "verified" } },
-            {
-                $facet: {
-                    colleges: [
-                        {
-                            $match: {
-                                collegeName: {
-                                    $exists: true,
-                                    $ne: null,
-                                    $ne: "",
-                                },
-                            },
-                        },
-                        { $group: { _id: "$collegeName" } },
-                        { $sort: { _id: 1 } },
-                    ],
-                    years: [
-                        {
-                            $match: {
-                                yearOfStudy: {
-                                    $exists: true,
-                                    $ne: null,
-                                    $ne: "",
-                                },
-                            },
-                        },
-                        { $group: { _id: "$yearOfStudy" } },
-                        { $sort: { _id: 1 } },
-                    ],
-                },
-            },
-        ]);
-
-        res.json({
-            success: true,
-            data: {
-                colleges: options[0].colleges.map((c) => c._id),
-                years: options[0].years.map((y) => y._id),
-                paymentStatuses: [
-                    "UNPAID",
-                    "PARTIAL_PAYMENT_VERIFICATION_PENDING",
-                    "PARTIAL_PAID",
-                    "FULLY_PAYMENT_VERIFICATION_PENDING",
-                    "FULLY_PAID",
-                ],
-                capstoneStatuses: [
-                    "Not Submitted",
-                    "submitted",
-                    "graded",
-                    "In Progress",
-                ],
-            },
-        });
-    } catch (error) {
-        console.error("Get filter options error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to get filter options",
             error: error.message,
         });
     }
@@ -895,7 +448,7 @@ export const updateCapstoneStatus = async (req, res) => {
             });
         }
 
-        res.json({
+        res.status(200).json({
             success: true,
             message: "Capstone status updated successfully",
             data: submission,
@@ -968,7 +521,7 @@ export const issueCertificate = async (req, res) => {
         // TODO: Generate PDF certificate and store URL
         // const pdfUrl = await generateCertificatePDF(enrollment);
 
-        res.json({
+        res.status(200).json({
             success: true,
             message: "Certificate issued successfully",
             data: {
@@ -995,59 +548,43 @@ export const issueCertificate = async (req, res) => {
  */
 export const exportStudentsCSV = async (req, res) => {
     try {
-        const {
-            collegeName = "",
-            paymentStatus = "",
-            capstoneStatus = "",
-        } = req.query;
+        const students = await Enrollment.aggregate([
+            // Match paid enrollments only
+            {
+                $match: {
+                    paymentStatus: {
+                        $nin: ["UNPAID", "PARTIAL_PAYMENT_VERIFICATION_PENDING"],
+                    },
+                },
+            },
 
-        // Build match conditions
-        const matchConditions = {
-            role: "student",
-            accountStatus: "verified",
-        };
-
-        if (collegeName && collegeName !== "All") {
-            matchConditions.collegeName = {
-                $regex: collegeName,
-                $options: "i",
-            };
-        }
-
-        const students = await Student.aggregate([
-            { $match: matchConditions },
+            // Lookup student details
             {
                 $lookup: {
-                    from: "enrollments",
-                    localField: "_id",
-                    foreignField: "student",
-                    as: "enrollments",
+                    from: "students",
+                    localField: "student",
+                    foreignField: "_id",
+                    as: "studentDetails",
                 },
             },
-            {
-                $unwind: {
-                    path: "$enrollments",
-                    preserveNullAndEmptyArrays: true,
-                },
-            },
+            { $unwind: "$studentDetails" },
+
+            // Lookup course details
             {
                 $lookup: {
                     from: "courses",
-                    localField: "enrollments.course",
+                    localField: "course",
                     foreignField: "_id",
                     as: "courseDetails",
                 },
             },
-            {
-                $unwind: {
-                    path: "$courseDetails",
-                    preserveNullAndEmptyArrays: true,
-                },
-            },
+            { $unwind: "$courseDetails" },
+
+            // Lookup capstone submissions
             {
                 $lookup: {
                     from: "submissions",
-                    let: { enrollmentId: "$enrollments._id" },
+                    let: { enrollmentId: "$_id" },
                     pipeline: [
                         {
                             $match: {
@@ -1070,21 +607,23 @@ export const exportStudentsCSV = async (req, res) => {
                     as: "capstoneSubmissions",
                 },
             },
+
+            // Project final fields for CSV
             {
                 $project: {
                     Name: {
-                        $concat: ["$name", " ", { $ifNull: ["$lastName", ""] }],
+                        $concat: [
+                            "$studentDetails.name",
+                            " ",
+                            { $ifNull: ["$studentDetails.lastName", ""] },
+                        ],
                     },
-                    Email: "$email",
-                    College: "$collegeName",
-                    Year: "$yearOfStudy",
+                    Email: "$studentDetails.email",
+                    College: "$studentDetails.collegeName",
+                    Year: "$studentDetails.yearOfStudy",
                     Course: "$courseDetails.title",
-                    "Payment Status": {
-                        $ifNull: ["$enrollments.paymentStatus", "N/A"],
-                    },
-                    "Amount Paid": {
-                        $ifNull: ["$enrollments.amountPaid", 0],
-                    },
+                    "Payment Status": "$paymentStatus",
+                    "Amount Paid": { $ifNull: ["$amountPaid", 0] },
                     "Capstone Status": {
                         $cond: {
                             if: { $gt: [{ $size: "$capstoneSubmissions" }, 0] },
@@ -1101,43 +640,24 @@ export const exportStudentsCSV = async (req, res) => {
                         $concat: [
                             {
                                 $toString: {
-                                    $ifNull: [
-                                        "$enrollments.progressPercentage",
-                                        0,
-                                    ],
+                                    $ifNull: ["$progressPercentage", 0],
                                 },
                             },
                             "%",
                         ],
                     },
                     "Certificate ID": {
-                        $ifNull: ["$enrollments.certificateId", "Not Issued"],
+                        $ifNull: ["$certificateId", "Not Issued"],
                     },
                     "Enrollment Date": {
                         $dateToString: {
                             format: "%Y-%m-%d",
-                            date: "$enrollments.enrollmentDate",
+                            date: "$enrollmentDate",
                         },
                     },
                 },
             },
         ]);
-
-        // Apply additional filters
-        let filteredStudents = students;
-
-        if (paymentStatus && paymentStatus !== "All") {
-            filteredStudents = filteredStudents.filter(
-                (s) => s["Payment Status"] === paymentStatus
-            );
-        }
-
-        if (capstoneStatus && capstoneStatus !== "All") {
-            filteredStudents = filteredStudents.filter(
-                (s) => s["Capstone Status"] === capstoneStatus
-            );
-        }
-
         // Convert to CSV
         const fields = [
             "Name",
@@ -1154,7 +674,7 @@ export const exportStudentsCSV = async (req, res) => {
         ];
 
         const json2csvParser = new Parser({ fields });
-        const csv = json2csvParser.parse(filteredStudents);
+        const csv = json2csvParser.parse(students);
 
         res.setHeader("Content-Type", "text/csv");
         res.setHeader(

@@ -13,7 +13,7 @@ const paymentSchema = new mongoose.Schema(
         screenshotUrl: { type: String }, // optional file upload URL
 
         // Payment Meta
-        amount: { type: Number, default: 500 },
+        amount: { type: Number, default: 0 },
         currency: { type: String, default: "INR" },
 
         // Auto timestamps

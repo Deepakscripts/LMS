@@ -13,7 +13,7 @@ const studentSchema = new mongoose.Schema(
         githubId: { type: String, select: false },
 
         // PROFILE
-        name: { type: String, required: true, trim: true },
+        name: { type: String, trim: true },
         middleName: { type: String },
         lastName: { type: String },
         phoneNumber: { type: String },
@@ -48,7 +48,7 @@ const studentSchema = new mongoose.Schema(
 
         accountStatus: {
             type: String,
-            enum: ["unenrolled", "pending", "verified", "blocked"],
+            enum: ["unenrolled", "enrolled"],
             default: "unenrolled",
         },
 
@@ -135,6 +135,21 @@ studentSchema.methods.generateRefreshToken = function () {
             expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
         }
     );
+};
+
+// Generate LMS Password method
+studentSchema.methods.generateLmsPassword = async function () {
+    const randomPassword = crypto.randomBytes(8).toString("hex");
+    const salt = await bcrypt.genSalt(10);
+    this.lmsPassword = await bcrypt.hash(randomPassword, salt);
+    return randomPassword;
+};
+
+studentSchema.methods.generateLmsId = async function () {
+    const randomId = crypto.randomBytes(8).toString("hex");
+    const salt = await bcrypt.genSalt(10);
+    this.lmsId = await bcrypt.hash(randomId, salt);
+    return randomId;
 };
 
 studentSchema.pre("validate", function (next) {

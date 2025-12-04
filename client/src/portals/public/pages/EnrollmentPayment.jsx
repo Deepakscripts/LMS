@@ -474,7 +474,7 @@ const EnrollmentPayment = () => {
                 <button
                   type="button"
                   disabled={isSubmitting}
-                  onClick={() => navigate('/enroll/details')}
+                  onClick={() => navigate('/enroll')}
                   className="px-6 py-3 border border-zinc-700 rounded-xl text-zinc-400 font-bold hover:text-white hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Back

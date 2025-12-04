@@ -4,18 +4,43 @@ import api from '../api';
 // DASHBOARD
 // ============================================
 
+export const verifyAdmin = async password => {
+  const response = await api.post('/auth/verify-admin', { password });
+  return response.data;
+};
+
 export const getDashboard = async () => {
   const response = await api.get('/admin/dashboard');
   return response.data;
 };
 
-export const getDashboardStats = async () => {
-  const response = await api.get('/admin/dashboard/stats');
+export const getDashboardStats = async (params = {}) => {
+  const response = await api.get('/admin/dashboard/stats', { params });
   return response.data;
 };
 
-export const getAllStudents = async () => {
-  const response = await api.get('/admin/dashboard/enrollments');
+export const getAllStudents = async (params = {}) => {
+  const response = await api.get('/admin/dashboard/enrollments', { params });
+  return response.data;
+};
+
+export const getEnrollmentsByCourse = async (params = {}) => {
+  const response = await api.get('/admin/dashboard/enrollments/by/course', { params });
+  return response.data;
+};
+
+export const getCollegesList = async () => {
+  const response = await api.get('/admin/dashboard/colleges');
+  return response.data;
+};
+
+export const getCoursesList = async () => {
+  const response = await api.get('/admin/dashboard/courses');
+  return response.data;
+};
+
+export const getStudentById = async studentId => {
+  const response = await api.get(`/admin/dashboard/student/info/${studentId}`);
   return response.data;
 };
 
@@ -48,6 +73,11 @@ export const deleteCourse = async courseId => {
   return response.data;
 };
 
+export const toggleCourseStatus = async (courseId, data) => {
+  const response = await api.patch(`/admin/course/${courseId}/status`, data);
+  return response.data;
+};
+
 // ============================================
 // ONGOING STUDENTS
 // ============================================
@@ -57,8 +87,11 @@ export const getOngoingStudents = async () => {
   return response.data;
 };
 
-export const approveOngoingStudent = async userId => {
-  const response = await api.patch(`/admin/ongoing/students/${userId}/approve`);
+export const approveOngoingStudent = async (enrollmentId, data) => {
+  const response = await api.patch(
+    `/admin/ongoing/students/${enrollmentId}/update-payment-status`,
+    data
+  );
   return response.data;
 };
 
@@ -127,14 +160,20 @@ export const getCourseAnalytics = async courseId => {
 
 // Export all admin service functions as a single object
 const adminService = {
+  verifyAdmin,
   getDashboard,
   getDashboardStats,
   getAllStudents,
+  getEnrollmentsByCourse,
+  getCollegesList,
+  getCoursesList,
+  getStudentById,
   getAllCourses,
   getCourseById,
   createCourse,
   updateCourse,
   deleteCourse,
+  toggleCourseStatus,
   getOngoingStudents,
   approveOngoingStudent,
   // rejectOngoingStudent,

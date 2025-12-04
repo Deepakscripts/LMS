@@ -122,14 +122,6 @@ export const enrollmentSchema = z.object({
         .trim()
         .min(10, "Transaction ID must be at least 10 characters")
         .max(50, "Transaction ID must not exceed 50 characters"),
-
-    paymentType: z
-        .enum(["partial", "full"], {
-            errorMap: () => ({
-                message: "Payment type must be either 'partial' or 'full'",
-            }),
-        })
-        .default("partial"),
 });
 
 // Middleware for enrollment validation
