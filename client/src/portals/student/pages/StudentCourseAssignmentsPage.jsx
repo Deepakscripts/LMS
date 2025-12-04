@@ -151,7 +151,9 @@ const StudentCourseAssignmentsPage = () => {
       {!assignments || assignments.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 sm:py-16">
           <FileText size={48} className="sm:w-16 sm:h-16 text-zinc-600 mb-4" />
-          <p className="text-zinc-400 text-sm sm:text-base">No assignments available for this course</p>
+          <p className="text-zinc-400 text-sm sm:text-base">
+            No assignments available for this course
+          </p>
         </div>
       ) : (
         <div className="space-y-3 sm:space-y-4">
@@ -174,15 +176,23 @@ const StudentCourseAssignmentsPage = () => {
                       ) : (
                         <FileText size={18} className="text-green-400 shrink-0" />
                       )}
-                      <h3 className="font-bold text-base sm:text-lg line-clamp-1">{assignment.title}</h3>
+                      <h3 className="font-bold text-base sm:text-lg line-clamp-1">
+                        {assignment.title}
+                      </h3>
                       {getStatusBadge(assignment)}
                     </div>
-                    <p className="text-zinc-500 text-xs sm:text-sm mb-1 truncate">{assignment.moduleTitle}</p>
+                    <p className="text-zinc-500 text-xs sm:text-sm mb-1 truncate">
+                      {assignment.moduleTitle}
+                    </p>
                     {assignment.description && (
-                      <p className="text-zinc-400 text-xs sm:text-sm line-clamp-2">{assignment.description}</p>
+                      <p className="text-zinc-400 text-xs sm:text-sm line-clamp-2">
+                        {assignment.description}
+                      </p>
                     )}
                     {assignment.grade && (
-                      <p className="text-green-400 text-xs sm:text-sm mt-2">Grade: {assignment.grade}</p>
+                      <p className="text-green-400 text-xs sm:text-sm mt-2">
+                        Grade: {assignment.grade}
+                      </p>
                     )}
                     {/* Show submitted link for submitted assignments */}
                     {isSubmitted && assignment.githubLink && (
@@ -257,10 +267,15 @@ const StudentCourseAssignmentsPage = () => {
                     )}
                     <div className="flex-1 min-w-0">
                       <h3 className="font-bold text-base sm:text-lg flex items-center gap-2">
-                        <Award size={16} className="sm:w-[18px] sm:h-[18px] text-yellow-400 shrink-0" />
+                        <Award
+                          size={16}
+                          className="sm:w-[18px] sm:h-[18px] text-yellow-400 shrink-0"
+                        />
                         <span className="truncate">Capstone Project</span>
                       </h3>
-                      <p className="text-zinc-400 text-xs sm:text-sm truncate">{course.capstone.title}</p>
+                      <p className="text-zinc-400 text-xs sm:text-sm truncate">
+                        {course.capstone.title}
+                      </p>
                     </div>
                     <div className="w-full sm:w-auto mt-1 sm:mt-0">
                       {!allModulesCompleted ? (

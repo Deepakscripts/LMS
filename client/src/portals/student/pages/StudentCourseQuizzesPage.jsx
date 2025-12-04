@@ -117,12 +117,12 @@ const StudentCourseQuizzesPage = () => {
                       <h3 className="font-bold text-base sm:text-lg line-clamp-1">{quiz.title}</h3>
                       {getStatusBadge(quiz)}
                     </div>
-                    <p className="text-zinc-500 text-xs sm:text-sm mb-1 truncate">{quiz.moduleTitle}</p>
+                    <p className="text-zinc-500 text-xs sm:text-sm mb-1 truncate">
+                      {quiz.moduleTitle}
+                    </p>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
                       <span className="text-zinc-400">{quiz.questionsCount} Questions</span>
-                      {quiz.score && (
-                        <span className="text-green-400">Score: {quiz.score}</span>
-                      )}
+                      {quiz.score && <span className="text-green-400">Score: {quiz.score}</span>}
                       {quiz.submissionDetails && (
                         <span className="text-green-400">
                           ({quiz.submissionDetails.percentage}%)

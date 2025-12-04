@@ -53,7 +53,11 @@ const StudentLoginPage = () => {
         // Check if user has enrolled courses
         try {
           const coursesResponse = await getMyCourses();
-          if (!coursesResponse.success || !coursesResponse.data || coursesResponse.data.length === 0) {
+          if (
+            !coursesResponse.success ||
+            !coursesResponse.data ||
+            coursesResponse.data.length === 0
+          ) {
             // No courses enrolled - clear auth and show error
             authService.logout();
             setError('You have no courses enrolled. Please enroll in a course first.');
