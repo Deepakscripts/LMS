@@ -1,4 +1,4 @@
-import React, { useState, memo, useMemo, useCallback } from 'react';
+import React, { useState, memo, useMemo, useCallback, useEffect } from 'react';
 import {
   Github,
   Award,
@@ -223,6 +223,18 @@ const CapstoneCard = ({ capstone, courseId, allModulesCompleted, onComplete }) =
   const { submit, loading: submitting, error: submitError } = useSubmitAssignment();
 
   const isLocked = !allModulesCompleted;
+
+  // Sync state with capstone prop when it changes (after refetch)
+  useEffect(() => {
+    if (capstone) {
+      setIsSubmitted(capstone.isSubmitted || capstone.isCompleted || false);
+      setSubmissionStatus(
+        capstone.submissionStatus || (capstone.isSubmitted ? 'submitted' : 'pending')
+      );
+      if (capstone.githubLink) setGithubLink(capstone.githubLink);
+      if (capstone.liveLink) setLiveLink(capstone.liveLink);
+    }
+  }, [capstone]);
 
   // Memoized validations
   const isGithubValid = useMemo(() => isValidGithubUrl(githubLink), [githubLink]);
