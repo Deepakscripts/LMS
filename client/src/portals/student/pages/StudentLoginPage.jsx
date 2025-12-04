@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Loader2, Eye, EyeOff, BookOpen } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import authService from '@/services/global/authService';
+import { getMyCourses } from '@/services/student/studentService';
 import { useNavigateWithRedux } from '@/common/hooks/useNavigateWithRedux';
 import { login, selectIsAuthenticated } from '@/redux/slices';
 
 const StudentLoginPage = () => {
   const navigate = useNavigateWithRedux();
   const dispatch = useDispatch();
+  const location = useLocation();
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   // Redirect if already logged in
@@ -21,6 +23,15 @@ const StudentLoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Show error from navigation state (e.g., redirected due to no enrolled courses)
+  useEffect(() => {
+    if (location.state?.error) {
+      setError(location.state.error);
+      // Clear the state so error doesn't persist on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // LMS Login fields
   const [lmsId, setLmsId] = useState('');
@@ -38,6 +49,23 @@ const StudentLoginPage = () => {
       if (response.success) {
         // Extract auth data from response - tokens are already stored in localStorage by authService
         const { accessToken, refreshToken, user } = response.data;
+
+        // Check if user has enrolled courses
+        try {
+          const coursesResponse = await getMyCourses();
+          if (!coursesResponse.success || !coursesResponse.data || coursesResponse.data.length === 0) {
+            // No courses enrolled - clear auth and show error
+            authService.logout();
+            setError('You have no courses enrolled. Please enroll in a course first.');
+            return;
+          }
+        } catch (courseErr) {
+          // Failed to fetch courses - clear auth and show error
+          authService.logout();
+          setError('You have no courses enrolled. Please enroll in a course first.');
+          return;
+        }
+
         // Store auth data in Redux for app-wide access
         dispatch(login({ accessToken, refreshToken, user }));
         navigate('/student/dashboard');

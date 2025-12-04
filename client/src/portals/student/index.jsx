@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 
-import ProtectedRoute from '@/common/components/ProtectedRoute';
+import StudentProtectedRoute from './components/StudentProtectedRoute';
 
 // Lazy load components for better code splitting
 const StudentLayout = lazy(() => import('./layout/StudentLayout'));
@@ -36,8 +36,8 @@ const StudentPortal = () => {
       <Routes>
         <Route path="/" element={<StudentLandingPage />} />
         <Route path="/login" element={<StudentLoginPage />} />
-        {/* Protected routes - require authentication */}
-        <Route element={<ProtectedRoute loginPath="/student/login" />}>
+        {/* Protected routes - require authentication AND enrolled courses */}
+        <Route element={<StudentProtectedRoute />}>
           <Route element={<StudentLayout />}>
             <Route path="/dashboard" element={<StudentDashboardPage />} />
             <Route path="/my-courses" element={<StudentMyCoursesPage />} />
