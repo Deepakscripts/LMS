@@ -8,12 +8,10 @@ import ms from "ms";
  * @returns {Object} Cookie configuration object
  */
 export const getAccessTokenCookieOptions = () => ({
-    // httpOnly: true, // Prevents XSS attacks - JavaScript cannot access
-    // secure: true, // HTTPS only in production
-    // sameSite: "strict", // Prevents CSRF attacks
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
     maxAge: ms(process.env.ACCESS_TOKEN_EXPIRY),
-    sameSite: "lax", // Prevents CSRF attacks
-    secure: false, // HTTPS only in production
 });
 
 /**
@@ -24,11 +22,9 @@ export const getAccessTokenCookieOptions = () => ({
  * @returns {Object} Cookie configuration object
  */
 export const getRefreshTokenCookieOptions = () => ({
-    // httpOnly: true, // Prevents XSS attacks
-    // secure: true, // HTTPS only in production
-    secure: false, // HTTPS only in production
-    // sameSite: "strict", // Prevents CSRF attacks
-    sameSite: "lax", // Prevents CSRF attacks
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
     maxAge: ms(process.env.REFRESH_TOKEN_EXPIRY),
 });
 
