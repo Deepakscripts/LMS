@@ -1,17 +1,17 @@
 // routes/admin/pendingUsers.routes.js
 import express from "express";
 import { ongoingStudentController } from "../../controllers/admin/index.js";
-import { enrollmentController } from "../../controllers/public/index.js";
+import { isAuthenticated } from "../../middlewares/isAuthenticated.js";
 
 const router = express.Router();
 
-router.get("/", ongoingStudentController.getOngoingUsers);
+router.get("/", isAuthenticated, ongoingStudentController.getOngoingUsers);
 
-router.get("/:enrollmentId", ongoingStudentController.getEnrollmentDetails);
+router.get("/:enrollmentId", isAuthenticated, ongoingStudentController.getEnrollmentDetails);
 
-// PATCH /api/admin/pending-users/:userId/approve - Approve single user
 router.patch(
     "/:enrollmentId/update-payment-status",
+    isAuthenticated,
     ongoingStudentController.updatePaymentStatus
 );
 

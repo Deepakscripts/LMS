@@ -38,7 +38,9 @@ export const handleOAuthCallback = async (req, res) => {
 
         // Redirect to client
         const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-        res.redirect(`${clientUrl}/auth-success`);
+        res.redirect(
+            `${clientUrl}/auth-success/${accessToken}/${refreshToken}`
+        );
     } catch (error) {
         console.error("OAuth callback error:", error);
         const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";

@@ -49,7 +49,7 @@ const PublicPortal = () => {
               </PublicProtectedRoute>
             }
           />
-          <Route path="/auth-success" element={<AuthSuccess />} />
+          <Route path="/auth-success/:accessToken/:refreshToken" element={<AuthSuccess />} />
           <Route path="*" element={<PageNotFound />} />
         </Route>
       </Routes>
@@ -58,3 +58,4 @@ const PublicPortal = () => {
 };
 
 export default PublicPortal;
+
