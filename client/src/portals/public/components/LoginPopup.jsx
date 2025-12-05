@@ -38,11 +38,11 @@ const LoginPopup = ({ isOpen, onClose }) => {
   }, [isOpen, onClose]);
 
   const handleGithubLogin = () => {
-    window.open('http://localhost:5001/api/auth/github', '_self');
+    window.open(import.meta.env.VITE_GITHUB_AUTH, '_self');
   };
 
   const handleGoogleLogin = () => {
-    window.open('http://localhost:5001/api/auth/google', '_self');
+    window.open(import.meta.env.VITE_GOOGLE_AUTH, '_self');
   };
 
   if (!isOpen) return null;
@@ -142,3 +142,4 @@ const LoginPopup = ({ isOpen, onClose }) => {
 };
 
 export default LoginPopup;
+
