@@ -25,7 +25,7 @@ export const sendEmail = async ({
     to,
     subject,
     html,
-    from = "onboarding@resend.dev",
+    from = process.env.EMAIL_FROM,
 }) => {
     try {
         const response = await resend.emails.send({
